@@ -1,1 +1,3 @@
 # Pocket-Rogue
+Project Summary
+Desktop users enjoy a wide variety of gaming catalogs while mobile users are largely restricted to app stores which have a whole process to get your app onto. Pocket Rogue intends to be a web catalog where developers (desktop and mobile alike) can publish their games onto. In Pocket Rogue, you will be able to upload and publish any games you make onto the site where any browsing users will be able to play and rate your games. Mobile users will be able to play some of these games without the need to download: getting around the need for an app store. We also intend on creating a starter game for Pocket Rogue to get the app moving on its feet. 
