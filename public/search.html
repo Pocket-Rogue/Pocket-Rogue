@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
   <link rel="stylesheet" href="styles/bootstrap-material-design.min.css">
   <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/neil.css">
   <link rel="icon" href="favicon.png">
   <title>Pocket Rogue</title>
 </head>
@@ -16,7 +17,13 @@
     <div>
       <button id="navButton" type="button" class="btn bmd-btn-fab"><i class="material-icons">arrow_back</i></button>
       &nbsp;
-      <a class="navbar-brand" href="#">Pocket Rogue</a>
+    </div>
+    <div id="search" class="rounded">
+      <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search"
+        aria-describedby="search-addon" />
+      <span class="input-group-text border-0" id="search-addon">
+        <i class="fas fa-search"></i>
+      </span>
     </div>
     <div>
       <button id="navButton" type="button" class="btn bmd-btn-fab"><i class="material-icons">search</i></button>
@@ -26,12 +33,13 @@
   </nav>
   <div id="mainPage" class="container page-container">
 
-
   </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>
   <script src="scripts/bootstrap-material-design.js"></script>
-  <script>$("body").bootstrapMaterialDesign();</script>
+  <script>
+    $("body").bootstrapMaterialDesign();
+  </script>
   <script src="/__/firebase/7.18.0/firebase-app.js"></script>
   <script src="/__/firebase/7.18.0/firebase-analytics.js"></script>
   <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
