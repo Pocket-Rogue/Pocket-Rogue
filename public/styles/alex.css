@@ -1,0 +1,52 @@
+.choose-image-container {
+    background-color: lightgray;
+}
+
+.logo-child {
+    display: inline-block
+}
+
+.create-button-container, .edit-button-container {
+    display: grid;
+    text-align: center;
+}
+
+.create-button-container {
+    visibility: shown;
+}
+
+.edit-button-container {
+    visibility: hidden;
+}
+
+.image-container {
+    height: 150px;
+}
+
+.caption-box {
+    display: grid;
+    background-color: lightgray;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+#colorButton {
+    grid-row-start: 1;
+    grid-row-end: 2;
+    grid-column-start: 2;
+    margin: auto;
+}
+
+#cloudIcon {
+    margin-right: 10px;
+}
+
+#logoBackground {
+    background-color: lightgray;
+}
+
+#CreateButton,#ViewButton,#SaveButton,#DeleteButton {
+    text-align: center;
+    background-color: #800000;
+    color: white;
+}

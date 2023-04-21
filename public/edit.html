@@ -1,17 +1,20 @@
 <!doctype html>
 <html lang="en">
 
+<!-- HTML code for the page where the user creates or edits their game. -->
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
   <link rel="stylesheet" href="styles/bootstrap-material-design.min.css">
   <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/alex.css">
   <link rel="icon" href="favicon.png">
   <title>Pocket Rogue</title>
 </head>
 
 <body>
+  <!-- Navbar -->
   <nav class="navbar navbar-dark fixed-top">
     <div>
       <button id="navButton" type="button" class="btn bmd-btn-fab"><i class="material-icons">arrow_back</i></button>
@@ -19,14 +22,65 @@
       <a class="navbar-brand" href="#">Pocket Rogue</a>
     </div>
     <div>
-      <button id="navButton" type="button" class="btn bmd-btn-fab"><i class="material-icons">search</i></button>
-      &nbsp;
       <button type="button" class="btn bmd-btn-fab"><img id="profile" src="https://cdn.discordapp.com/avatars/463296942429044747/8e028c15aa38df5e39210d6cae95387b.webp?size=100"></button>
     </div>
   </nav>
   <div id="mainPage" class="container page-container">
+    <!-- Spot for game image and button to upload an image -->
+    <div class="choose-image-container">
+      <div class="image-container">
+        <img id="uploadImage">
+      </div>
+      <button id="uploadButton" type="button" class="btn"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Main Image</button> 
+    </div>
+    <hr>
+    <div class="logo-parent">
+      <div class="logo-child" id="logoBackground"><img id="uploadLogo"></div>
+      <div class="logo-child"><button id="uploadButton" type="button" class="btn"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Logo</button></div>
+    </div>
+    <!-- Game Title and Author -->
+    <div class="caption-box">
+      <div class="form-outline">
+        <input type="text" id="inputTitle" class="form-control" placeholder="Game Title..." />
+      </div>
+      <div class="form-outline">
+        <input type="text" id="inputAuthor" class="form-control" placeholder="Author..." />
+      </div>
+      <button id="colorButton" type="button" class="btn bmd-btn-fab"><i class="material-icons">palette</i></button>
+    </div>
+    <!-- Description box. Using textarea to create a text box to type in instead of a line-->
+    <div class="form-outline">
+      <textarea type="text" id="inputDescription" class="form-control" rows="10" placeholder="Description..."></textarea>
+    </div>
+    <!-- Upload a game file -->
+    <div class="chooseText">
+      <button id="GameButton" type="button" class="btn"><i class="material-icons" id="cloudIcon">cloud_upload</i> Choose a Game File</button>
+    </div>
 
-
+    <!-- CRUD BUTTONS: Create (publish), Read (view), Update (save), Delete (delete) -->
+    <div class="create-button-container">
+      <div class="row justify-content-center">
+        <div class="col-9">
+          <button id="CreateButton" type="button" class="btn btn-block">PUBLISH</button>
+        </div>
+      </div>
+    </div>
+    <!-- RUD is in a separate container because we only show the publish button when creating a new game 
+        and we show the remaining buttons only when making changes to an existing game.
+        For this sprint, the RUD buttons are hidden by default. -->
+    <div class="edit-button-container">
+      <div class="row justify-content-center">
+        <div class="col-3">
+          <button id="ViewButton" type="button" class="btn btn-block">VIEW</button>
+        </div>
+        <div class="col-3">
+          <button id="SaveButton" type="button" class="btn btn-block">SAVE</button>
+        </div>
+        <div class="col-3">
+          <button id="DeleteButton" type="button" class="btn btn-block">DELETE</button>
+        </div>
+      </div>
+    </div>
   </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>
