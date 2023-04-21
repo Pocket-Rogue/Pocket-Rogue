@@ -2,3 +2,41 @@
     height: auto;
     width: 50%;
 }
+
+#mainImage {
+    width: 100%;
+}
+
+#gameTitle {
+    font-size: 1.5em;
+    font-weight: bolder;
+    margin: 0;
+}
+
+#author {
+    font-size: 1.5em;
+    font-weight: bolder;
+}
+
+#autherTitlezBox {
+    color: white;
+    background-color: blue;
+    display: grid;
+}
+
+#starButton {
+    grid-row-start: 1;
+    grid-row-end: 2;
+    grid-column-start: 2;
+    margin-right: 100;
+    margin-left: auto;
+}
+
+#review {
+    grid-row-start: 1;
+    grid-row-end: 2;
+    grid-column-start: 2;
+    margin-right: 100;
+    margin-left: auto;
+    /* background-color: #800000; */
+}
