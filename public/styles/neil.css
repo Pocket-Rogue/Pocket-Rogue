@@ -7,6 +7,12 @@
     width: 100%;
 }
 
+#autherTitleBox {
+    color: white;
+    background-color: grey;
+    display: grid;
+}
+
 #gameTitle {
     font-size: 1.5em;
     font-weight: bolder;
@@ -18,25 +24,19 @@
     font-weight: bolder;
 }
 
-#autherTitlezBox {
-    color: white;
-    background-color: blue;
-    display: grid;
-}
-
 #starButton {
     grid-row-start: 1;
-    grid-row-end: 2;
+    grid-row-end: 1;
     grid-column-start: 2;
     margin-right: 100;
     margin-left: auto;
 }
 
 #review {
-    grid-row-start: 1;
+    grid-row-start: 2;
     grid-row-end: 2;
     grid-column-start: 2;
     margin-right: 100;
     margin-left: auto;
-    /* background-color: #800000; */
+    background-color: #800000;
 }
