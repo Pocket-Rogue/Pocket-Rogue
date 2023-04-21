@@ -3,6 +3,10 @@
     width: 50%;
 }
 
+#gamePage {
+    padding: 0;
+}
+
 #mainImage {
     width: 100%;
 }
@@ -11,6 +15,8 @@
     color: white;
     background-color: grey;
     display: grid;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 #gameTitle {
