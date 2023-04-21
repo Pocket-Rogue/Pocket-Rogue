@@ -7,21 +7,26 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
   <link rel="stylesheet" href="styles/bootstrap-material-design.min.css">
   <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/duncan.css">
   <link rel="icon" href="favicon.png">
   <title>Pocket Rogue</title>
 </head>
 
 <body>
   <nav class="navbar navbar-dark fixed-top">
-    <div>
+    <div class="navbar-portion">
       <button id="navButton" type="button" class="btn bmd-btn-fab"><i class="material-icons">arrow_back</i></button>
-      &nbsp;
       <a class="navbar-brand" href="#">Pocket Rogue</a>
     </div>
-    <div>
-      <button id="searchButton" type="button" class="btn bmd-btn-fab"><i class="material-icons">search</i></button>
-      &nbsp;
-      <button type="button" class="btn bmd-btn-fab"><img alt="profile picture" id="profile" src="https://cdn.discordapp.com/avatars/463296942429044747/8e028c15aa38df5e39210d6cae95387b.webp?size=100"></button>
+    <div class="">
+      <form class="d-flex">
+        <div class="input-group navbar-portion">
+          <input type="text" class="form-control" placeholder="Search..." aria-label="Search..." id="search">
+          <button id="searchSubmit" type="submit" class="btn bmd-btn-fab"><i class="material-icons">search</i></button>
+          <button type="button" class="btn bmd-btn-fab"><img alt="profile picture" id="profile"
+              src="https://cdn.discordapp.com/avatars/463296942429044747/8e028c15aa38df5e39210d6cae95387b.webp?size=100"></button>
+        </div>
+      </form>
     </div>
   </nav>
   <div id="mainPage" class="container page-container">
@@ -31,7 +36,9 @@
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>
   <script src="scripts/bootstrap-material-design.js"></script>
-  <script>$("body").bootstrapMaterialDesign();</script>
+  <script>
+    $("body").bootstrapMaterialDesign();
+  </script>
   <script src="/__/firebase/7.18.0/firebase-app.js"></script>
   <script src="/__/firebase/7.18.0/firebase-analytics.js"></script>
   <script src="/__/firebase/7.18.0/firebase-auth.js"></script>

@@ -1,0 +1,23 @@
+#rightside * {
+    display: inline;
+}
+
+.navbar {
+    padding: 0px;
+}
+
+.navbar > * {
+    height: 100%;
+}
+
+.navbar form {
+    margin-bottom: 8px;
+}
+
+.navbar-portion > * {
+    margin: 8px;
+}
+
+.bmd-form-group {
+    padding-top: 0px;
+}
