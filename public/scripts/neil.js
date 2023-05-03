@@ -138,9 +138,9 @@ rhit.initializePage = () => {
 	if (document.querySelector("#gamePage")) {
 		console.log("You are on the game page");
 		const gameId = urlParams.get("id");
-		if (!gameId) {
-			window.location.href = "/";
-		}
+		// if (!gameId) {
+		// 	window.location.href = "/";
+		// }
 		rhit.fbSingleGameManager = new rhit.FbSingleGameManager(gameId);
 		new rhit.GamePageController();
 	}
