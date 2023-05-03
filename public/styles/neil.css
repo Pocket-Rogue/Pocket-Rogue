@@ -3,6 +3,10 @@
     width: 50%;
 }
 
+#searchText {
+    font-size: 40px;
+}
+
 #gamePage {
     padding: 0;
 }
