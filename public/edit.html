@@ -31,12 +31,17 @@
       <div class="image-container">
         <img id="uploadImage">
       </div>
-      <button id="uploadButton" type="button" class="btn"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Main Image</button> 
+      <!-- TODO: Add upload image functionality -->
+      <form id="imageForm" action="/api" method="post" enctype="multipart/form-data">
+        <label for="imageFile">File</label>
+        <input id="imageFile" name="imageFile" type="file" />
+        <button id="imageUploadButton" type="button" class="btn"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Main Image</button> 
+      </form>
     </div>
     <hr>
     <div class="logo-parent">
       <div class="logo-child" id="logoBackground"><img id="uploadLogo"></div>
-      <div class="logo-child"><button id="uploadButton" type="button" class="btn"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Logo</button></div>
+      <div class="logo-child"><button id="logoUploadButton" type="button" class="btn"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Logo</button></div>
     </div>
     <!-- Game Title and Author -->
     <div class="caption-box">
@@ -92,6 +97,7 @@
   <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
   <script src="/__/firebase/init.js"></script>
   <script src="scripts/main.js"></script>
+  <script src="scripts/alex.js"></script>
 </body>
 
 </html>

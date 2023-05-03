@@ -17,39 +17,34 @@ var rhit = rhit || {};
 
 rhit.EditGameDataController = class {
     constructor() {
-
+        const imageForm = document.querySelector('#imageForm');
+        imageForm.addEventListener('submit', handleSubmit);
     }
-    addGame() {
 
-    }
-    updateGame() {
+    // Handle upload event here
+    handleSubmit(event) {
+        const form = event.currentTarget;
+        const url = new URL(form.action);
+        const formData = new FormData(form);
+        const searchParams = new URLSearchParams(formData);
 
-    }
-    getIsApproved() {
+        if(form.method.toLowerCase() == 'post') {
+            if(form.enctype === 'multipart/form-data') {
+                fetchOptions.body = formData;
+            } else {
+                fetchOptions.body = searchParams;
+            }
+        } else {
+            url.search = searchParams;
+        }
 
-    }
-    getGameName() {
+        fetch(url, {
+            method: form.method,
+            body: formData,
+        });
 
-    }
-    getGameTag() {
-
-    }
-    getGameBanner() {
-
-    }
-    setGameBanner() {
-
-    }
-    getGameCode() {
-
-    }
-    setGameCode() {
-
-    }
-    getGameIsCanvas() {
-
-    }
-    setGameIsCanvas() {
+        // Any JS that could fail goes here
+        event.preventDefault();
 
     }
 
