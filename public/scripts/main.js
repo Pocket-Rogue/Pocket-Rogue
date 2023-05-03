@@ -34,6 +34,7 @@ rhit.FbAuthManager = class FbAuthManager {
 	beginListening(changeListener) {
 		firebase.auth().onAuthStateChanged((user) => {
 			this.#user = user;
+			$("#profileImage").text(user.uid[0].toUpperCase())
 			changeListener?.();
 		})
 	}
@@ -78,9 +79,12 @@ rhit.FbAuthManager = class FbAuthManager {
 rhit.checkForRedirects = function() {
 	if (document.querySelector("#loginPage")) {
 		if(rhit.fbAuthManager.isSignedIn) {
-			window.location.href = "/list.html";
+			window.location.href = "/index.html";
 		}
 	} else {
+		if(document.querySelector("#mainPage")) {
+			return;
+		}
 		if(!rhit.fbAuthManager.isSignedIn) {
 			window.location.href = "/";
 		}
