@@ -14,6 +14,19 @@ var rhit = rhit || {};
  * getGameIsCanvas
  * setGameIsCanvas
 */
+rhit.GAME_COLLECTION = "Games";
+
+rhit.GAME_BANNERCOLOR = "BannerColor";
+rhit.GAME_APPROVED = "approved";
+rhit.GAME_BANNER = "banner";
+rhit.GAME_CODE = "code";
+rhit.GAME_DESCRIPTION = "description";
+rhit.GAME_DEVELOPER = "developer";
+rhit.GAME_ICON = "icon";
+rhit.GAME_ISCANVAS = "isCanvas";
+rhit.GAME_TITLE = "title";
+rhit.GAME_TOTAL_RATINGS = "totalRatings";
+rhit.GAME_TOTAL_STARS = "totalStars";
 rhit.ECGameManager = null;
 
 rhit.EditGameDataController = class {
@@ -74,7 +87,8 @@ rhit.EditGameDataController = class {
 
 rhit.editGameDataManager = class {
     constructor() {
-        console.log("Created editGameDataManager.")
+        console.log("Created editGameDataManager.");
+        this._ref = firebase.firestore().collection(rhit.GAME_COLLECTION);
     }
     // Handle image upload display here
     loadMainImage(event) {
@@ -167,7 +181,26 @@ rhit.editGameDataManager = class {
         }
         console.log("Passed validity check. Proceeding to publish the game...");
 
-        // TODO: Add a new entry to the Games collection in firestore.
+        // Add a new entry to the Games collection in firestore.
+        this._ref.add({
+            [rhit.GAME_BANNERCOLOR]: captionColor,
+            [rhit.GAME_APPROVED]: false,
+            [rhit.GAME_BANNER]: mainImage,
+            [rhit.GAME_CODE]: jsGameString,
+            [rhit.GAME_DESCRIPTION]: description,
+            [rhit.GAME_DEVELOPER]: author,
+            [rhit.GAME_ICON]: logoImage,
+            [rhit.GAME_ISCANVAS]: true,
+            [rhit.GAME_TITLE]: title,
+            [rhit.GAME_TOTAL_RATINGS]: 0,
+            [rhit.GAME_TOTAL_STARS]: 0,
+        })
+        .then((docRef) => {
+            console.log("Game published with ID: ", docRef.id);
+        })
+        .catch((error) => {
+            console.error("Error adding document: ", error);
+        });
 
         return 1;
     }
