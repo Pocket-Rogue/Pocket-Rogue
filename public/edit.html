@@ -25,16 +25,15 @@
       <button type="button" class="btn bmd-btn-fab"><img id="profile" src="https://cdn.discordapp.com/avatars/463296942429044747/8e028c15aa38df5e39210d6cae95387b.webp?size=100"></button>
     </div>
   </nav>
-  <div id="mainPage" class="container page-container">
+  <div id="editPage" class="container page-container">
     <!-- Spot for game image and button to upload an image -->
     <div class="choose-image-container">
       <div class="image-container">
         <img id="uploadImage" src="images/empty_image.jpg"/>
       </div>
-      <!-- TODO: Add upload image functionality -->
       <form id="imageForm" action="/api" method="post" enctype="multipart/form-data">
         <label for="imageFile"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Main Image</label>
-        <input id="imageFile" name="imageFile" type="file" accept="image/*" onchange="loadMainImage(event)" style="display: none;"/>
+        <input id="imageFile" name="imageFile" type="file" accept="image/*" style="display: none;"/>
       </form>
     </div>
     <hr>
@@ -44,7 +43,7 @@
       </div>
       <form id="logoForm" action="/api" method="post" enctype="multipart/form-data">
         <label for="logoFile"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Logo</label>
-        <input id="logoFile" name="logoFile" type="file" accept="image/*" onchange="loadLogoImage(event)" style="display: none;"/>
+        <input id="logoFile" name="logoFile" type="file" accept="image/*" style="display: none;"/>
       </form>
     </div>
     <!-- Game Title and Author -->
@@ -56,7 +55,7 @@
         <input type="text" style="color:black" id="inputAuthor" class="form-control" placeholder="Author..." />
       </div>
       <div id="color-container">
-        <input id="colorButton" type="color" value="#CCCCCC" onchange="changeColor(event)" class="btn bmd-btn-fab">
+        <input id="colorButton" type="color" value="#CCCCCC" class="btn bmd-btn-fab">
         <p><i class="material-icons">palette</i> Pick a Caption Color</p>
       </div>
     </div>
@@ -74,7 +73,7 @@
     <div class="create-button-container">
       <div class="row justify-content-center">
         <div class="col-9">
-          <button id="CreateButton" type="button" class="btn btn-block">PUBLISH</button>
+          <button id="createButton" type="button" class="btn btn-block">PUBLISH</button>
         </div>
       </div>
     </div>
@@ -106,18 +105,6 @@
   <script src="/__/firebase/init.js"></script>
   <script src="scripts/main.js"></script>
   <script src="scripts/alex.js"></script>
-
-  <!-- Handle image upload display here -->
-  <script>
-    var loadMainImage = function(event) {
-        var image = document.getElementById('uploadImage');
-        image.src = URL.createObjectURL(event.target.files[0]);
-    };
-    var loadLogoImage = function(event) {
-        var image = document.getElementById('uploadLogo');
-        image.src = URL.createObjectURL(event.target.files[0]);
-    }
-  </script>
 </body>
 
 </html>

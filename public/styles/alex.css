@@ -44,7 +44,7 @@
     background-color: lightgray;
 }
 
-#CreateButton,#ViewButton,#SaveButton,#DeleteButton {
+#createButton,#ViewButton,#SaveButton,#DeleteButton {
     text-align: center;
     background-color: #800000;
     color: white;
