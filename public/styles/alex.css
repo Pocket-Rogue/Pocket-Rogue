@@ -16,7 +16,7 @@
 }
 
 .image-container, #uploadImage {
-    height: 300px;
+    height: 200px;
     max-width: 600px;
 }
 
@@ -27,16 +27,13 @@
 
 .caption-box {
     display: grid;
-    background-color: lightgray;
     padding: 10px;
     margin: 10px 0;
 }
 
-#colorButton {
-    grid-row-start: 1;
-    grid-row-end: 2;
-    grid-column-start: 2;
-    margin: auto;
+#color-container {
+    margin: 10px;
+    background-color: lightgray;
 }
 
 #cloudIcon {

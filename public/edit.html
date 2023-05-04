@@ -48,18 +48,21 @@
       </form>
     </div>
     <!-- Game Title and Author -->
-    <div class="caption-box">
+    <div class="caption-box" id="gameCaption" style="background-color: lightgray;">
       <div class="form-outline">
-        <input type="text" id="inputTitle" class="form-control" placeholder="Game Title..." />
+        <input type="text" style="color:black" id="inputTitle" class="form-control" placeholder="Game Title..." />
       </div>
       <div class="form-outline">
-        <input type="text" id="inputAuthor" class="form-control" placeholder="Author..." />
+        <input type="text" style="color:black" id="inputAuthor" class="form-control" placeholder="Author..." />
       </div>
-      <button id="colorButton" type="button" class="btn bmd-btn-fab"><i class="material-icons">palette</i></button>
+      <div id="color-container">
+        <input id="colorButton" type="color" value="#CCCCCC" onchange="changeColor(event)" class="btn bmd-btn-fab">
+        <p><i class="material-icons">palette</i> Pick a Caption Color</p>
+      </div>
     </div>
     <!-- Description box. Using textarea to create a text box to type in instead of a line-->
     <div class="form-outline">
-      <textarea type="text" id="inputDescription" class="form-control" rows="10" placeholder="Description..."></textarea>
+      <textarea type="text" id="inputDescription" class="form-control" rows="6" placeholder="Description..."></textarea>
     </div>
     <!-- Upload a game file -->
     <form id="gameForm" action="/api" method="post" enctype="multipart/form-data">
