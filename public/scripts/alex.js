@@ -51,5 +51,14 @@ rhit.EditGameDataController = class {
         event.preventDefault();
 
     }
+}
 
+// Handle image upload display here
+function loadMainImage(event) {
+    var image = document.getElementById('uploadImage');
+    image.src = URL.createObjectURL(event.target.files[0]);
+};
+function loadLogoImage(event) {
+    var image = document.getElementById('uploadLogo');
+    image.src = URL.createObjectURL(event.target.files[0]);
 }

@@ -29,20 +29,22 @@
     <!-- Spot for game image and button to upload an image -->
     <div class="choose-image-container">
       <div class="image-container">
-        <img id="uploadImage">
+        <img id="uploadImage" src="images/empty_image.jpg"/>
       </div>
       <!-- TODO: Add upload image functionality -->
       <form id="imageForm" action="/api" method="post" enctype="multipart/form-data">
         <label for="imageFile"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Main Image</label>
-        <input id="imageFile" name="imageFile" type="file" accept=".png,.jpg"/>
+        <input id="imageFile" name="imageFile" type="file" accept="image/*" onchange="loadMainImage(event)" style="display: none;"/>
       </form>
     </div>
     <hr>
     <div class="logo-parent">
-      <div class="logo-child" id="logoBackground"><img id="uploadLogo"></div>
+      <div class="logo-container">
+        <img id="uploadLogo" src="images/empty_image.jpg"/>
+      </div>
       <form id="logoForm" action="/api" method="post" enctype="multipart/form-data">
         <label for="logoFile"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Logo</label>
-        <input id="logoFile" name="logoFile" type="file" accept=".png,.jpg"/>
+        <input id="logoFile" name="logoFile" type="file" accept="image/*" onchange="loadLogoImage(event)" style="display: none;"/>
       </form>
     </div>
     <!-- Game Title and Author -->
@@ -101,6 +103,18 @@
   <script src="/__/firebase/init.js"></script>
   <script src="scripts/main.js"></script>
   <script src="scripts/alex.js"></script>
+
+  <!-- Handle image upload display here -->
+  <script>
+    var loadMainImage = function(event) {
+        var image = document.getElementById('uploadImage');
+        image.src = URL.createObjectURL(event.target.files[0]);
+    };
+    var loadLogoImage = function(event) {
+        var image = document.getElementById('uploadLogo');
+        image.src = URL.createObjectURL(event.target.files[0]);
+    }
+  </script>
 </body>
 
 </html>
