@@ -20,13 +20,9 @@ rhit.EditGameDataController = class {
     constructor() {
         console.log("Added EditGameDataController.");
 
-
-        const imageForm = document.querySelector('#imageForm');
-        const logoForm = document.querySelector('#logoForm');
-        const gameForm = document.querySelector('#gameForm');
-        imageForm.addEventListener('submit', this.handleSubmit);
-        logoForm.addEventListener('submit', this.handleSubmit);
-        gameForm.addEventListener('submit', this.handleSubmit);
+        document.querySelector('#imageForm').addEventListener('submit', this.handleSubmit);
+        document.querySelector('#logoForm').addEventListener('submit', this.handleSubmit);
+        document.querySelector('#gameForm').addEventListener('submit', this.handleSubmit);
         document.querySelector("#imageFile").addEventListener('change', (event) => {
             console.log("Upload a main image!");
             rhit.ECGameManager.loadMainImage(event);
@@ -115,8 +111,58 @@ rhit.editGameDataManager = class {
     }
 
     // Handle adding a new game here. Occurs when "publish" is pressed
-    addGame(event) {
-        console.log("Add the new game!");
+    // TODO: Add functionality to publish a game. The following should be implemented:
+    /**
+     * Obtain the mainImage src (banner), logoImage src (Icon), style color of the caption (BannerColor),
+     * the js file string (Code), title (Title), author (AuthorName), and the description (Description).
+     * Check that all of these entries are valid, aka they aren't empty.
+     * If one of them is empty, an alert needs to be given that that field needs to be filled.
+     * Note: Description is allowed to be empty.
+     * Otherwise, proceed to create a new firestore Games Item. 
+     */
+    addGame() {
+        // Fetch game values
+        console.log("Attempting to publish game...");
+        var mainImage = document.querySelector("#uploadImage").src;
+        var logoImage = document.querySelector("#uploadLogo").src;
+        var captionColor = document.querySelector("#gameCaption").style.backgroundColor;
+        var jsGameString = document.querySelector("#gameFile").value;
+        var title = document.querySelector("#inputTitle").value;
+        var author = document.querySelector("#inputAuthor").value;
+        var description = document.querySelector("#inputDescription").value; 
+        console.log(`Game values found. Here are the following parameters:\nmain image: ${mainImage}\nlogo image: ${logoImage}
+        \ncaption color: ${captionColor}\njsGameString: ${jsGameString}\ntitle: ${title}\nauthor: ${author}\ndescription: ${description} `);
+
+        // Inspect game values: Build alert string
+        let alertString = "You are unable to publish your game: ";
+        let invalidPublish = false;
+        if (mainImage.includes("images/empty_image.jpg")) {
+            invalidPublish = true;
+            alertString = alertString.concat("\nPlease upload a banner image.");
+        }
+        if (logoImage.includes("images/empty_image.jpg")) {
+            invalidPublish = true;
+            alertString = alertString.concat("\nPlease upload a logo image.");
+        }
+        if (jsGameString.length == 0) {
+            invalidPublish = true;
+            alertString = alertString.concat("\nPlease upload a javascript game file.");
+        }
+        if (title.length == 0) {
+            invalidPublish = true;
+            alertString = alertString.concat("\nPlease add a title.");
+        }
+        if (author.length == 0) {
+            invalidPublish = true;
+            alertString = alertString.concat("\nPlease add an author.");
+        }
+
+        // Alert user a message if publish isn't done
+        if (invalidPublish) {
+            alert(alertString);
+            return;
+        }
+        console.log("Passed validity check. Proceeding to publish the game...");
     }
 }
 
