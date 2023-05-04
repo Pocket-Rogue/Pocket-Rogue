@@ -33,15 +33,17 @@
       </div>
       <!-- TODO: Add upload image functionality -->
       <form id="imageForm" action="/api" method="post" enctype="multipart/form-data">
-        <label for="imageFile">File</label>
-        <input id="imageFile" name="imageFile" type="file" />
-        <button id="imageUploadButton" type="button" class="btn"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Main Image</button> 
+        <label for="imageFile"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Main Image</label>
+        <input id="imageFile" name="imageFile" type="file" accept=".png,.jpg"/>
       </form>
     </div>
     <hr>
     <div class="logo-parent">
       <div class="logo-child" id="logoBackground"><img id="uploadLogo"></div>
-      <div class="logo-child"><button id="logoUploadButton" type="button" class="btn"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Logo</button></div>
+      <form id="logoForm" action="/api" method="post" enctype="multipart/form-data">
+        <label for="logoFile"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Logo</label>
+        <input id="logoFile" name="logoFile" type="file" accept=".png,.jpg"/>
+      </form>
     </div>
     <!-- Game Title and Author -->
     <div class="caption-box">
@@ -58,9 +60,10 @@
       <textarea type="text" id="inputDescription" class="form-control" rows="10" placeholder="Description..."></textarea>
     </div>
     <!-- Upload a game file -->
-    <div class="chooseText">
-      <button id="GameButton" type="button" class="btn"><i class="material-icons" id="cloudIcon">cloud_upload</i> Choose a Game File</button>
-    </div>
+    <form id="gameForm" action="/api" method="post" enctype="multipart/form-data">
+      <label for="gameFile"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Game File</label>
+      <input id="gameFile" name="logoFile" type="file" accept=".js"/>
+    </form>
 
     <!-- CRUD BUTTONS: Create (publish), Read (view), Update (save), Delete (delete) -->
     <div class="create-button-container">

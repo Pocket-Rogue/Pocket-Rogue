@@ -18,7 +18,11 @@ var rhit = rhit || {};
 rhit.EditGameDataController = class {
     constructor() {
         const imageForm = document.querySelector('#imageForm');
-        imageForm.addEventListener('submit', handleSubmit);
+        const logoForm = document.querySelector('#logoForm');
+        const gameForm = document.querySelector('#gameForm');
+        imageForm.addEventListener('submit', this.handleSubmit);
+        logoForm.addEventListener('submit', this.handleSubmit);
+        gameForm.addEventListener('submit', this.handleSubmit);
     }
 
     // Handle upload event here
