@@ -37,7 +37,10 @@ rhit.EditGameDataController = class {
         });
         document.querySelector("#createButton").addEventListener('click', (event) => {
             console.log("Create a new game!");
-            rhit.ECGameManager.addGame();
+            let success = rhit.ECGameManager.addGame();
+            if (success == 1) {
+                window.location.href = "index.html";
+            }
         });
     }
 
@@ -160,9 +163,13 @@ rhit.editGameDataManager = class {
         // Alert user a message if publish isn't done
         if (invalidPublish) {
             alert(alertString);
-            return;
+            return 0;
         }
         console.log("Passed validity check. Proceeding to publish the game...");
+
+        // TODO: Add a new entry to the Games collection in firestore.
+
+        return 1;
     }
 }
 
