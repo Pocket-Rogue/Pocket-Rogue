@@ -28,6 +28,7 @@ rhit.GAME_TITLE = "title";
 rhit.GAME_TOTAL_RATINGS = "totalRatings";
 rhit.GAME_TOTAL_STARS = "totalStars";
 rhit.ECGameManager = null;
+rhit.GameId = null;
 
 rhit.EditGameDataController = class {
     constructor() {
@@ -54,6 +55,22 @@ rhit.EditGameDataController = class {
             if (success == 1) {
                 window.location.href = "index.html";
             }
+        });
+        document.querySelector("#viewButton").addEventListener('click', (event) => {
+            console.log("View the game!");
+            window.location.href = `game.html?id=${rhit.gameId}`;
+        });
+        document.querySelector("#saveButton").addEventListener('click', (event) => {
+            console.log("Save the game!");
+            let success = rhit.ECGameManager.saveGame();
+            if (success == 1) {
+                window.location.href = "index.html";
+            }
+        });
+        document.querySelector("#deleteButton").addEventListener('click', (event) => {
+            console.log("Delete the game!");
+            let success = rhit.ECGameManager.deleteGame();
+            window.location.href = "index.html";
         });
     }
 
@@ -88,6 +105,7 @@ rhit.EditGameDataController = class {
 rhit.editGameDataManager = class {
     constructor(gameId) {
         console.log("Created editGameDataManager.");
+        rhit.gameId = gameId;
         if (!gameId) {
             console.log("We're creating a new game!");
             this._ref = firebase.firestore().collection(rhit.GAME_COLLECTION);
@@ -142,8 +160,7 @@ rhit.editGameDataManager = class {
         caption.style.backgroundColor = chosenColor.value;
     }
 
-    // Handle adding a new game here. Occurs when "publish" is pressed
-    // TODO: Add functionality to publish a game. The following should be implemented:
+    // Handle adding a new game here. Occurs when "publish" is pressed.
     /**
      * Obtain the mainImage src (banner), logoImage src (Icon), style color of the caption (BannerColor),
      * the js file string (Code), title (Title), author (AuthorName), and the description (Description).
@@ -219,6 +236,75 @@ rhit.editGameDataManager = class {
 
         return 1;
     }
+
+    saveGame() {
+        // Fetch game values
+        console.log("Saving changes to the game...");
+        var mainImage = document.querySelector("#uploadImage").src;
+        var logoImage = document.querySelector("#uploadLogo").src;
+        var captionColor = document.querySelector("#gameCaption").style.backgroundColor;
+        var jsGameString = document.querySelector("#gameFile").value;
+        var title = document.querySelector("#inputTitle").value;
+        var author = document.querySelector("#inputAuthor").value;
+        var description = document.querySelector("#inputDescription").value; 
+        console.log(`Game values found. Here are the following parameters:\nmain image: ${mainImage}\nlogo image: ${logoImage}
+        \ncaption color: ${captionColor}\njsGameString: ${jsGameString}\ntitle: ${title}\nauthor: ${author}\ndescription: ${description} `);
+
+        // Inspect game values: Build alert string
+        let alertString = "You are unable to your changes: ";
+        let invalidPublish = false;
+        if (mainImage.includes("images/empty_image.jpg")) {
+            invalidPublish = true;
+            alertString = alertString.concat("\nPlease upload a banner image.");
+        }
+        if (logoImage.includes("images/empty_image.jpg")) {
+            invalidPublish = true;
+            alertString = alertString.concat("\nPlease upload a logo image.");
+        }
+        if (jsGameString.length == 0) {
+            invalidPublish = true;
+            alertString = alertString.concat("\nPlease upload a javascript game file.");
+        }
+        if (title.length == 0) {
+            invalidPublish = true;
+            alertString = alertString.concat("\nPlease add a title.");
+        }
+        if (author.length == 0) {
+            invalidPublish = true;
+            alertString = alertString.concat("\nPlease add an author.");
+        }
+
+        // Alert user a message if save isn't done
+        if (invalidPublish) {
+            alert(alertString);
+            return 0;
+        }
+        console.log("Passed validity check. Proceeding to save changes...");
+
+        // Update the existing entry to the Games collection in firestore.
+        this._ref.update({
+            [rhit.GAME_BANNERCOLOR]: captionColor,
+            [rhit.GAME_BANNER]: mainImage,
+            [rhit.GAME_CODE]: jsGameString,
+            [rhit.GAME_DESCRIPTION]: description,
+            [rhit.GAME_DEVELOPER]: author,
+            [rhit.GAME_ICON]: logoImage,
+            [rhit.GAME_TITLE]: title,
+        })
+        .then(() => {
+            console.log("Changes saved");
+        })
+        .catch((error) => {
+            console.error("Error saving changes: ", error);
+        });
+
+        return 1;
+    }
+
+    deleteGame() {
+        return this._ref.delete();
+    }
+
 }
 
 /* Main */
