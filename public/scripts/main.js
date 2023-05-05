@@ -103,7 +103,7 @@ rhit.FbAuthManager = class FbAuthManager {
 	}
 	get uid() {
 		// Null chaining!
-		return this.#user?.uid;
+		return this.#user?.uid ?? "|anonymous|"
 	}
 }
 
