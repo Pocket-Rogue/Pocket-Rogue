@@ -37,10 +37,7 @@ rhit.EditGameDataController = class {
         });
         document.querySelector("#createButton").addEventListener('click', (event) => {
             console.log("Create a new game!");
-            let success = rhit.ECGameManager.addGame();
-            if (success == 1) {
-                window.location.href = "index.html";
-            }
+            rhit.ECGameManager.addGame();
         });
         document.querySelector("#viewButton").addEventListener('click', (event) => {
             console.log("View the game!");
@@ -48,15 +45,17 @@ rhit.EditGameDataController = class {
         });
         document.querySelector("#saveButton").addEventListener('click', (event) => {
             console.log("Save the game!");
-            let success = rhit.ECGameManager.saveGame();
-            if (success == 1) {
-                window.location.href = "index.html";
-            }
+            rhit.ECGameManager.saveGame();
         });
         document.querySelector("#deleteButton").addEventListener('click', (event) => {
             console.log("Delete the game!");
-            let success = rhit.ECGameManager.deleteGame();
-            window.location.href = "index.html";
+            rhit.ECGameManager.deleteGame()
+            .then(() => {
+                console.log("Game successfully deleted!");
+                window.location.href = "index.html";
+            }).catch((error) => {
+                console.error("Error deleting game: ", error);
+            });
         });
 
         if (gameId) {
@@ -97,7 +96,8 @@ rhit.EditGameDataController = class {
         document.querySelector("#uploadImage").src = rhit.ECGameManager.mainImage;
         document.querySelector("#uploadLogo").src = rhit.ECGameManager.logoImage;
         document.querySelector("#gameCaption").style.backgroundColor = rhit.ECGameManager.captionColor;
-        document.querySelector("#gameFile").value = rhit.ECGameManager.jsGameString;
+        document.querySelector("#colorButton").value = rhit.ECGameManager.captionColor;
+        /*document.querySelector("#gameFile").value = rhit.ECGameManager.jsGameString;*/
         document.querySelector("#inputTitle").value = rhit.ECGameManager.title;
         document.querySelector("#inputAuthor").value = rhit.ECGameManager.author;
         document.querySelector("#inputDescription").value = rhit.ECGameManager.description;
@@ -195,7 +195,7 @@ rhit.editGameDataManager = class {
         console.log("Attempting to publish game...");
         var mainImage = document.querySelector("#uploadImage").src;
         var logoImage = document.querySelector("#uploadLogo").src;
-        var captionColor = document.querySelector("#gameCaption").style.backgroundColor;
+        var captionColor = document.querySelector("#colorButton").value;
         var jsGameString = document.querySelector("#gameFile").value;
         var title = document.querySelector("#inputTitle").value;
         var author = document.querySelector("#inputAuthor").value;
@@ -214,10 +214,10 @@ rhit.editGameDataManager = class {
             invalidPublish = true;
             alertString = alertString.concat("\nPlease upload a logo image.");
         }
-        if (jsGameString.length == 0) {
+        /*if (jsGameString.length == 0) {
             invalidPublish = true;
             alertString = alertString.concat("\nPlease upload a javascript game file.");
-        }
+        }*/
         if (title.length == 0) {
             invalidPublish = true;
             alertString = alertString.concat("\nPlease add a title.");
@@ -230,7 +230,7 @@ rhit.editGameDataManager = class {
         // Alert user a message if publish isn't done
         if (invalidPublish) {
             alert(alertString);
-            return 0;
+            return;
         }
         console.log("Passed validity check. Proceeding to publish the game...");
         console.log("Adding game ", this._ref);
@@ -251,12 +251,13 @@ rhit.editGameDataManager = class {
         })
         .then((docRef) => {
             console.log("Game published with ID: ", docRef.id);
+            window.location.href = "index.html";
         })
         .catch((error) => {
             console.error("Error adding document: ", error);
         });
 
-        return 1;
+        return;
     }
 
     saveGame() {
@@ -283,10 +284,10 @@ rhit.editGameDataManager = class {
             invalidPublish = true;
             alertString = alertString.concat("\nPlease upload a logo image.");
         }
-        if (jsGameString.length == 0) {
+        /*if (jsGameString.length == 0) {
             invalidPublish = true;
             alertString = alertString.concat("\nPlease upload a javascript game file.");
-        }
+        }*/
         if (title.length == 0) {
             invalidPublish = true;
             alertString = alertString.concat("\nPlease add a title.");
@@ -299,7 +300,7 @@ rhit.editGameDataManager = class {
         // Alert user a message if save isn't done
         if (invalidPublish) {
             alert(alertString);
-            return 0;
+            return;
         }
         console.log("Passed validity check. Proceeding to save changes...");
 
@@ -315,13 +316,14 @@ rhit.editGameDataManager = class {
             [rhit.GAME_TITLE]: title,
         })
         .then(() => {
-            console.log("Changes saved");
+            console.log("Changes saved!");
+            window.location.href = "index.html";
         })
         .catch((error) => {
             console.error("Error saving changes: ", error);
         });
 
-        return 1;
+        return;
     }
 
     deleteGame() {
