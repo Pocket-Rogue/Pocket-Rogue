@@ -14,21 +14,18 @@
 
 <body>
   <nav class="navbar navbar-dark fixed-top">
-    <div>
-      <button id="navButton" type="button" class="btn bmd-btn-fab"><i class="material-icons">arrow_back</i></button>
-      &nbsp;
+    <div class="navbar-portion">
+      <button id="navButton" type="button" class="btn bmd-btn-fab" onclick="history.back()"><i class="material-icons">arrow_back</i></button>
+      <a class="navbar-brand" href="/">Pocket Rogue</a>
     </div>
-    <div id="search" class="rounded">
-      <input id="searchText" type="search" class="form-control rounded" placeholder="Search..." aria-label="Search"
-        aria-describedby="search-addon" />
-      <span class="input-group-text border-0" id="search-addon">
-        <i class="fas fa-search"></i>
-      </span>
-    </div>
-    <div>
-      <button id="navButton" type="button" class="btn bmd-btn-fab"><i class="material-icons">close</i></button>
-      &nbsp;
-      <button type="button" class="btn bmd-btn-fab"><img id="profile" src="https://cdn.discordapp.com/avatars/463296942429044747/8e028c15aa38df5e39210d6cae95387b.webp?size=100"></button>
+    <div class="">
+      <form class="d-flex">
+        <div class="input-group navbar-portion">
+          <input type="text" class="form-control" placeholder="Search..." aria-label="Search..." id="search">
+          <button id="searchSubmit" type="submit" class="btn bmd-btn-fab" href="search.html?search="><i class="material-icons">search</i></button>
+          <button type="button" class="btn bmd-btn-fab"><div id="profileImage"></div></button>
+        </div>
+      </form>
     </div>
   </nav>
   <div id="mainPage" class="container page-container">
