@@ -59,9 +59,10 @@ rhit.FbAuthManager = class FbAuthManager {
 	}
 	beginListening(changeListener) {
 		firebase.auth().onAuthStateChanged((user) => {
+			let uid = user?.uid ?? "Anonymous";
 			this.#user = user;
-			$("#profileImage").text(user.uid[0].toUpperCase())
-			var seed = cyrb128(user.uid);
+			$("#profileImage").text(uid[0].toUpperCase())
+			var seed = cyrb128(uid);
 			
 			$("#profileImage").css("background-color", `#${Math.floor(0xFFFFFF * mulberry32(seed[0])()).toString(16).padStart(6,"0")}`)
 			console.log(`#${mulberry32(seed[0])().toString(16).padStart(6,"0")}`);
