@@ -17,7 +17,7 @@ rhit.ECGameManager = null;
 rhit.GameId = null;
 
 rhit.EditGameDataController = class {
-    constructor() {
+    constructor(gameId) {
         console.log("Added EditGameDataController.");
 
         document.querySelector('#imageForm').addEventListener('submit', this.handleSubmit);
@@ -58,6 +58,10 @@ rhit.EditGameDataController = class {
             let success = rhit.ECGameManager.deleteGame();
             window.location.href = "index.html";
         });
+
+        if (gameId) {
+            rhit.ECGameManager.beginListening(this.showExistingGame.bind(this));
+        }
     }
 
     // Handle upload event here. Credit: https://www.webtrickshome.com/forum/how-to-display-uploaded-image-in-html-using-javascript
@@ -86,10 +90,23 @@ rhit.EditGameDataController = class {
         event.preventDefault();
 
     }
+
+    // Load in existing game resources
+    showExistingGame() {
+        document.querySelector("#uploadImage").src = rhit.ECGameManager.mainImage;
+        document.querySelector("#uploadLogo").src = rhit.ECGameManager.logoImage;
+        document.querySelector("#gameCaption").style.backgroundColor = rhit.ECGameManager.captionColor;
+        document.querySelector("gameFile").value = rhit.ECGameManager.jsGameString;
+        document.querySelector("#inputTitle").value = rhit.ECGameManager.title;
+        document.querySelector("#inputAuthor").value = rhit.ECGameManager.author;
+        document.querySelector("#inputDescription").value = rhit.ECGameManager.description;
+    }
 }
 
 rhit.editGameDataManager = class {
     constructor(gameId) {
+        this._documentSnapshot = {};
+        this._unsubscribe = null;
         console.log("Created editGameDataManager.");
         rhit.gameId = gameId;
         if (!gameId) {
@@ -101,13 +118,30 @@ rhit.editGameDataManager = class {
             this._showEditButtons();
         }
     }
+    beginListening(changeListener) {
+		this._unsubscribe = this._ref.onSnapshot((doc) => {
+			if (doc.exists) {
+				console.log("Document data:", doc.data());
+				this._documentSnapshot = doc;
+				changeListener();
+			} else {
+				// doc.data() will be undefined in this case
+				console.log("No such document!");
+				//window.location.href = "/";
+			}
+		});
+	}
+	stopListening() {
+		this._unsubscribe();
+	}
 
     // If we're in edit mode, hide the publish button and show the other buttons
     _showEditButtons() {
         document.querySelector("#createButton").style.visibility = "hidden";
-        document.querySelector("#viewButton").style.visibility = "shown";
-        document.querySelector("#saveButton").style.visibility = "shown";
-        document.querySelector("#deleteButton").style.visibility = "shown";
+        document.querySelector("#viewButton").style.visibility = "visible";
+        document.querySelector("#saveButton").style.visibility = "visible";
+        document.querySelector("#deleteButton").style.visibility = "visible";
+        console.log("Buttons should be toggled");
     }
     // Handle image upload display here
     loadMainImage(event) {
@@ -291,6 +325,28 @@ rhit.editGameDataManager = class {
         return this._ref.delete();
     }
 
+    get mainImage() {
+        return this._documentSnapshot.get(rhit.GAME_BANNER);
+    }
+    get logoImage() {
+        return this._documentSnapshot.get(rhit.GAME_ICON);
+    }
+    get captionColor() {
+        return this._documentSnapshot.get(rhit.GAME_BANNERCOLOR);
+    }
+    get jsGameString() {
+        return this._documentSnapshot.get(rhit.GAME_CODE);
+    }
+    get title() {
+        return this._documentSnapshot.get(rhit.GAME_TITLE);
+    }
+    get author() {
+        return this._documentSnapshot.get(rhit.GAME_DEVELOPER);
+    }
+    get description() {
+        return this._documentSnapshot.get(rhit.GAME_DESCRIPTION);
+    }
+
 }
 
 /* Main */
@@ -314,7 +370,7 @@ rhit.main = function () {
         }
 
         rhit.ECGameManager = new rhit.editGameDataManager(gameId);
-		new rhit.EditGameDataController();
+		new rhit.EditGameDataController(gameId);
 	}
 };
 
