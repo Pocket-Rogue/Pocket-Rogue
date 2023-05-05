@@ -86,9 +86,24 @@ rhit.EditGameDataController = class {
 }
 
 rhit.editGameDataManager = class {
-    constructor() {
+    constructor(gameId) {
         console.log("Created editGameDataManager.");
-        this._ref = firebase.firestore().collection(rhit.GAME_COLLECTION);
+        if (!gameId) {
+            console.log("We're creating a new game!");
+            this._ref = firebase.firestore().collection(rhit.GAME_COLLECTION);
+        } else {
+            this._ref = firebase.firestore().collection(rhit.GAME_COLLECTION).doc(gameId);
+            console.log(`Listing to ${this._ref.path}`);
+            this._showEditButtons();
+        }
+    }
+
+    // If we're in edit mode, hide the publish button and show the other buttons
+    _showEditButtons() {
+        document.querySelector("#createButton").style.visibility = "hidden";
+        document.querySelector("#viewButton").style.visibility = "shown";
+        document.querySelector("#saveButton").style.visibility = "shown";
+        document.querySelector("#deleteButton").style.visibility = "shown";
     }
     // Handle image upload display here
     loadMainImage(event) {
@@ -213,7 +228,20 @@ rhit.main = function () {
 
 	if(document.querySelector("#editPage")) {
 		console.log("You are on the edit/create game page.");
-        rhit.ECGameManager = new rhit.editGameDataManager();
+
+        // Determine if there is a game id being passed (that means we're editing a game)
+        const queryString = window.location.search;
+		console.log(queryString);
+		const urlParams = new URLSearchParams(queryString);
+		const gameId = urlParams.get("id");
+
+		if (!gameId) {
+            console.log("Creating a new game");
+		} else {
+            console.log("Editing an existing game");
+        }
+
+        rhit.ECGameManager = new rhit.editGameDataManager(gameId);
 		new rhit.EditGameDataController();
 	}
 };

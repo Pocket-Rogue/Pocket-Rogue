@@ -7,14 +7,6 @@
     text-align: center;
 }
 
-.create-button-container {
-    visibility: shown;
-}
-
-.edit-button-container {
-    visibility: hidden;
-}
-
 .image-container, #uploadImage {
     height: 200px;
     max-width: 600px;
@@ -44,7 +36,7 @@
     background-color: lightgray;
 }
 
-#createButton,#ViewButton,#SaveButton,#DeleteButton {
+#createButton,#viewButton,#saveButton,#deleteButton {
     text-align: center;
     background-color: #800000;
     color: white;
