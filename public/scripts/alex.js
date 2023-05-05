@@ -93,10 +93,11 @@ rhit.EditGameDataController = class {
 
     // Load in existing game resources
     showExistingGame() {
+        console.log("Attempting to show an existing game");
         document.querySelector("#uploadImage").src = rhit.ECGameManager.mainImage;
         document.querySelector("#uploadLogo").src = rhit.ECGameManager.logoImage;
         document.querySelector("#gameCaption").style.backgroundColor = rhit.ECGameManager.captionColor;
-        document.querySelector("gameFile").value = rhit.ECGameManager.jsGameString;
+        document.querySelector("#gameFile").value = rhit.ECGameManager.jsGameString;
         document.querySelector("#inputTitle").value = rhit.ECGameManager.title;
         document.querySelector("#inputAuthor").value = rhit.ECGameManager.author;
         document.querySelector("#inputDescription").value = rhit.ECGameManager.description;
@@ -232,6 +233,7 @@ rhit.editGameDataManager = class {
             return 0;
         }
         console.log("Passed validity check. Proceeding to publish the game...");
+        console.log("Adding game ", this._ref);
 
         // Add a new entry to the Games collection in firestore.
         this._ref.add({
@@ -301,6 +303,7 @@ rhit.editGameDataManager = class {
         }
         console.log("Passed validity check. Proceeding to save changes...");
 
+        console.log("Updating the game ", this._ref);
         // Update the existing entry to the Games collection in firestore.
         this._ref.update({
             [rhit.GAME_BANNERCOLOR]: captionColor,
@@ -322,6 +325,7 @@ rhit.editGameDataManager = class {
     }
 
     deleteGame() {
+        console.log("Deleting the following game: ", this._ref);
         return this._ref.delete();
     }
 
