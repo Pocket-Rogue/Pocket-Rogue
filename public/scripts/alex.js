@@ -128,6 +128,7 @@ rhit.editGameDataManager = class {
 			} else {
 				// doc.data() will be undefined in this case
 				console.log("No such document!");
+                window.location.href = "404.html";
 				//window.location.href = "/";
 			}
 		});
@@ -147,11 +148,29 @@ rhit.editGameDataManager = class {
     // Handle image upload display here
     loadMainImage(event) {
         var image = document.getElementById('uploadImage');
-        image.src = URL.createObjectURL(event.target.files[0]);
+        //image.src = URL.createObjectURL(event.target.files[0]);
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = function() {
+            const base64 = reader.result;
+            image.src = base64;
+        };
+
+        image.src = reader.readAsDataURL(file);
     }
     loadLogoImage(event) {
         var image = document.getElementById('uploadLogo');
-        image.src = URL.createObjectURL(event.target.files[0]);
+        //image.src = URL.createObjectURL(event.target.files[0]);
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = function() {
+            const base64 = reader.result;
+            image.src = base64;
+        };
+
+        reader.readAsDataURL(file);
     }
 
     // Handle color change here
@@ -265,7 +284,7 @@ rhit.editGameDataManager = class {
         console.log("Saving changes to the game...");
         var mainImage = document.querySelector("#uploadImage").src;
         var logoImage = document.querySelector("#uploadLogo").src;
-        var captionColor = document.querySelector("#gameCaption").style.backgroundColor;
+        var captionColor = document.querySelector("#colorButton").value;
         var jsGameString = document.querySelector("#gameFile").value;
         var title = document.querySelector("#inputTitle").value;
         var author = document.querySelector("#inputAuthor").value;
