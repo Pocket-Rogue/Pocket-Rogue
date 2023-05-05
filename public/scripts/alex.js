@@ -31,6 +31,10 @@ rhit.EditGameDataController = class {
             console.log("Upload a logo!");
             rhit.ECGameManager.loadLogoImage(event);
         });
+        document.querySelector("#gameFile").addEventListener('change', (event) => {
+            console.log("Upload a javascript file!");
+            rhit.ECGameManager.loadGameFile(event);
+        })
         document.querySelector("#colorButton").addEventListener('change', (event) => {
             console.log("Change the color!");
             rhit.ECGameManager.changeColor();
@@ -97,7 +101,7 @@ rhit.EditGameDataController = class {
         document.querySelector("#uploadLogo").src = rhit.ECGameManager.logoImage;
         document.querySelector("#gameCaption").style.backgroundColor = rhit.ECGameManager.captionColor;
         document.querySelector("#colorButton").value = rhit.ECGameManager.captionColor;
-        /*document.querySelector("#gameFile").value = rhit.ECGameManager.jsGameString;*/
+        document.querySelector("#gameScript").value = rhit.ECGameManager.jsGameString;
         document.querySelector("#inputTitle").value = rhit.ECGameManager.title;
         document.querySelector("#inputAuthor").value = rhit.ECGameManager.author;
         document.querySelector("#inputDescription").value = rhit.ECGameManager.description;
@@ -120,16 +124,19 @@ rhit.editGameDataManager = class {
         }
     }
     beginListening(changeListener) {
+        let gameExists = false;
 		this._unsubscribe = this._ref.onSnapshot((doc) => {
 			if (doc.exists) {
+                gameExists = true;
 				console.log("Document data:", doc.data());
 				this._documentSnapshot = doc;
 				changeListener();
 			} else {
 				// doc.data() will be undefined in this case
 				console.log("No such document!");
-                window.location.href = "404.html";
-				//window.location.href = "/";
+                if (!gameExists) {
+                    window.location.href = "404.html";
+                }
 			}
 		});
 	}
@@ -139,6 +146,7 @@ rhit.editGameDataManager = class {
 
     // If we're in edit mode, hide the publish button and show the other buttons
     _showEditButtons() {
+        document.querySelector("#gameLabel").innerHTML = "Overwrite existing js file (optional)";
         document.querySelector("#createButton").style.visibility = "hidden";
         document.querySelector("#viewButton").style.visibility = "visible";
         document.querySelector("#saveButton").style.visibility = "visible";
@@ -169,6 +177,19 @@ rhit.editGameDataManager = class {
             const base64 = reader.result;
             image.src = base64;
         };
+
+        reader.readAsDataURL(file);
+    }
+    loadGameFile(event) {
+        var game = document.getElementById('gameScript');
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = function() {
+            const base64 = reader.result;
+            console.log(base64);
+            game.value = base64;
+        }
 
         reader.readAsDataURL(file);
     }
@@ -215,7 +236,7 @@ rhit.editGameDataManager = class {
         var mainImage = document.querySelector("#uploadImage").src;
         var logoImage = document.querySelector("#uploadLogo").src;
         var captionColor = document.querySelector("#colorButton").value;
-        var jsGameString = document.querySelector("#gameFile").value;
+        var jsGameString = document.querySelector("#gameScript").value;
         var title = document.querySelector("#inputTitle").value;
         var author = document.querySelector("#inputAuthor").value;
         var description = document.querySelector("#inputDescription").value; 
@@ -285,7 +306,7 @@ rhit.editGameDataManager = class {
         var mainImage = document.querySelector("#uploadImage").src;
         var logoImage = document.querySelector("#uploadLogo").src;
         var captionColor = document.querySelector("#colorButton").value;
-        var jsGameString = document.querySelector("#gameFile").value;
+        var jsGameString = document.querySelector("#gameScript").value;
         var title = document.querySelector("#inputTitle").value;
         var author = document.querySelector("#inputAuthor").value;
         var description = document.querySelector("#inputDescription").value; 
