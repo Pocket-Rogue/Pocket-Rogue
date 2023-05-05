@@ -1,19 +1,5 @@
 var rhit = rhit || {};
 
-/** TODO
- * Functions to construct for edit/create game page
- * String gameID
- * Firebase ref
- * getIsApproved
- * getGameName
- * getGameTag
- * getGameBanner
- * setGameBanner
- * getGameCode
- * setGameCode
- * getGameIsCanvas
- * setGameIsCanvas
-*/
 rhit.GAME_COLLECTION = "Games";
 
 rhit.GAME_BANNERCOLOR = "BannerColor";
@@ -222,7 +208,7 @@ rhit.editGameDataManager = class {
             [rhit.GAME_DESCRIPTION]: description,
             [rhit.GAME_DEVELOPER]: author,
             [rhit.GAME_ICON]: logoImage,
-            [rhit.GAME_ISCANVAS]: true,
+            [rhit.GAME_ISCANVAS]: false,
             [rhit.GAME_TITLE]: title,
             [rhit.GAME_TOTAL_RATINGS]: 0,
             [rhit.GAME_TOTAL_STARS]: 0,
