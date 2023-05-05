@@ -115,46 +115,46 @@ rhit.FbSingleGameManager = class {
 	}
 }
 
-// rhit.FbAuthManager = class {
-// 	constructor() {
-// 		this._user = null;
-// 	}
-// 	beginListening(changeListener) {
-// 		firebase.auth().onAuthStateChanged((user) => {
-// 			this._user = user;
-// 			changeListener();
-// 		});
-// 	}
-// 	signIn() {
-// 		console.log("TODO: Sign in using Rosefire");
-// 		Rosefire.signIn("84d5e5a9-7ee8-4172-b06f-a70e5d8eb874", (err, rfUser) => {
-// 			if (err) {
-// 				console.log("Rosefire error!", err);
-// 				return;
-// 			}
-// 			console.log("Rosefire success!", rfUser);
+rhit.FbAuthManager = class {
+	constructor() {
+		this._user = null;
+	}
+	beginListening(changeListener) {
+		firebase.auth().onAuthStateChanged((user) => {
+			this._user = user;
+			changeListener();
+		});
+	}
+	signIn() {
+		console.log("TODO: Sign in using Rosefire");
+		Rosefire.signIn("84d5e5a9-7ee8-4172-b06f-a70e5d8eb874", (err, rfUser) => {
+			if (err) {
+				console.log("Rosefire error!", err);
+				return;
+			}
+			console.log("Rosefire success!", rfUser);
 
-// 			firebase.auth().signInWithCustomToken(rfUser.token).catch((error) => {
-// 				const errorCode = error.code;
-// 				const errorMessage = error.message;
-// 				if (errorCode === "auth/invalid-custom-token") {
-// 					alert("The token you provided is not valid.")
-// 				} else {
-// 					console.log("Custom auth error", errorCode, errorMessage);
-// 				}
-// 			});
-// 		});
-// 	}
-// 	signOut() {
-// 		firebase.auth().signOut();
-// 	}
-// 	get uid() {
-// 		return this._user.uid;
-// 	}
-// 	get isSignedIn() {
-// 		return !!this._user;
-// 	}
-// }
+			firebase.auth().signInWithCustomToken(rfUser.token).catch((error) => {
+				const errorCode = error.code;
+				const errorMessage = error.message;
+				if (errorCode === "auth/invalid-custom-token") {
+					alert("The token you provided is not valid.")
+				} else {
+					console.log("Custom auth error", errorCode, errorMessage);
+				}
+			});
+		});
+	}
+	signOut() {
+		firebase.auth().signOut();
+	}
+	get uid() {
+		return this._user.uid;
+	}
+	get isSignedIn() {
+		return !!this._user;
+	}
+}
 
 rhit.initializePage = () => {
 	const urlParams = new URLSearchParams(window.location.search);
@@ -194,4 +194,4 @@ rhit.main = function () {
 	});
 };
 
-rhit.main();
+// rhit.main();
