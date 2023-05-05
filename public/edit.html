@@ -65,8 +65,9 @@
     </div>
     <!-- Upload a game file -->
     <form id="gameForm" action="/api" method="post" enctype="multipart/form-data">
-      <label for="gameFile"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Game File</label>
+      <label for="gameFile" id="gameLabel"><i class="material-icons" id="cloudIcon">cloud_upload</i>Choose a Game File</label>
       <input id="gameFile" name="logoFile" type="file" accept=".js"/>
+      <textarea id="gameScript" style="display:none"></textarea>
     </form>
 
     <!-- CRUD BUTTONS: Create (publish), Read (view), Update (save), Delete (delete) -->
