@@ -7,6 +7,21 @@ body {
     color: white;
 }
 
+#parent {
+    display: table;
+}
+
+#child {
+     display: table-cell;
+     vertical-align: middle;
+}
+
+#playPage {
+    margin: 75px auto;
+    width: 500px;
+    height: 500px
+}
+
 #profileImage {
     width: 56px;
     height: 56px;
