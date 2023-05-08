@@ -15,6 +15,7 @@ rhit.FB_KEY_ISCANVAS = "isCanvas";
 
 rhit.FB_COLLECTION_USERS = "Users";
 rhit.FB_COLLECTION_PLAYEDGAMES = "playedGames";
+rhit.FB_COLLECTION_DEVELOPEDGAMES = "developedGames";
 rhit.FB_KEY_FAVORITE = "favorited";
 rhit.FB_KEY_RATED = "isRated";
 rhit.fbSingleGameManager = null;
@@ -352,11 +353,11 @@ rhit.EditGameDataController = class {
     }
 }
 
-rhit.editGameDataManager = class {
+rhit.EditGameDataManager = class {
     constructor(gameId) {
         this._documentSnapshot = {};
         this._unsubscribe = null;
-        console.log("Created editGameDataManager.");
+        console.log("Created EditGameDataManager.");
         rhit.gameId = gameId;
         if (!gameId) {
             console.log("We're creating a new game!");
@@ -654,8 +655,64 @@ rhit.checkForRedirects = function() {
 	}
 }
 
+rhit.FbMainManager = class {
+    constructor() {
+        this._gamesRef = firebase.firestore().collection(rhit.FB_COLLECTION_GAMES);
+		this._userRef = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbAuthManager.uid)
+    }
+    get games() {
+        let gameList = [];
+        for(let i = 0; i < this._gamesSnapshot.docs.length; i++) {
+            let doc = this._gamesSnapshot.docs[i];
+            let data = doc.data();
+            gameList.push({
+                id: doc.id,
+                title: data.title,
+                icon: data.icon
+            });
+        }
+        return gameList;
+    }
+    get userGames() {
+        let gamesList = this._userSnapshot.get(rhit.FB_COLLECTION_DEVELOPEDGAMES);
+        return gamesList;
+    }
+    beginListening(changeListener1, changeListener2) {
+        let gameExists = false;
+		this._gamesRef.get().then(gamesSnapshot => {
+            this._gamesSnapshot = gamesSnapshot;
+            changeListener1();
+        });
+        this._userRef.onSnapshot(snap => {
+            this._userSnapshot = snap;
+            changeListener2();
+        });
+        
+	}
+	stopListening() {
+	}
+
+}
+
+rhit.MainPageController = class {
+    constructor() {
+
+        rhit.fbMainManager.beginListening(this.updateGamesList.bind(this), this.updateUserGamesList.bind(this));
+    }
+    updateGamesList() {
+        console.log(rhit.fbMainManager.games);
+    }
+    updateUserGamesList() {
+        console.log(rhit.fbMainManager.userGames);
+    }
+}
+
 rhit.initializePage = () => {
 	const urlParams = new URLSearchParams(window.location.search);
+    if (document.querySelector("#mainPage")) {
+		rhit.fbMainManager = new rhit.FbMainManager();
+		new rhit.MainPageController();
+	}
 	if (document.querySelector("#gamePage")) {
 		const gameId = urlParams.get("id");
 		if (!gameId) {
@@ -691,7 +748,7 @@ rhit.initializePage = () => {
             console.log("Editing an existing game");
         }
 
-        rhit.ECGameManager = new rhit.editGameDataManager(gameId);
+        rhit.ECGameManager = new rhit.EditGameDataManager(gameId);
 		new rhit.EditGameDataController(gameId);
 	}
 };
