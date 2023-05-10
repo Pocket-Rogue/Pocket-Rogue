@@ -81,6 +81,7 @@ rhit.GamePageController = class {
 	}
 	updateView() {
 		document.querySelector("#mainImage").src = rhit.fbSingleGameManager.image;
+		document.querySelector("#mainImageWrapper").href = `/play.html?id=${rhit.fbSingleGameManager.id}`
 		document.querySelector("#autherTitleBox").style.backgroundColor = rhit.fbSingleGameManager.color;
 		document.querySelector("#gameTitle").innerHTML = rhit.fbSingleGameManager.title;
 		document.querySelector("#author").innerHTML = rhit.fbSingleGameManager.author;
@@ -103,6 +104,7 @@ rhit.GamePageController = class {
 
 rhit.FbSingleGameManager = class {
 	constructor(gameId, userId) {
+        this.id = gameId;
 		this._gameDocumentSnapshot = {};
 		this._userGameDocumentSnapshot = null;
 		this._gameUnsubscribe = null;
@@ -767,7 +769,7 @@ rhit.MainPageController = class {
 			const g = games[i];
 			const newCard = this.createCard(g);
 			newCard.addEventListener("click", (event) => {
-				window.location.href = `/game.html?id=${p.id}`;
+				window.location.href = `/game.html?id=${g.id}`;
 			});
 			newList.appendChild(newCard);
 		}
@@ -778,10 +780,12 @@ rhit.MainPageController = class {
     }
     
     createCard(game) {
-		return htmlToElement(`<div class="pin" data-id="${game.id}">
+		return htmlToElement(`
+        <div class="pin" data-id="${game.id}">
           <img class="img-fluid" src="${game.icon}">
           <p class="caption">${game.title}</p>
-      </div>`);
+        </div>
+      `);
 	}
     updateUserGamesList() {
         console.log(rhit.fbMainManager.userGames);
@@ -792,7 +796,7 @@ rhit.MainPageController = class {
 			const g = games[i];
 			const newCard = this.createCard(g);
 			newCard.addEventListener("click", (event) => {
-				window.location.href = `/game.html?id=${p.id}`;
+				window.location.href = `/edit.html?id=${g.id}`;
 			});
 			newList.appendChild(newCard);
 		}
