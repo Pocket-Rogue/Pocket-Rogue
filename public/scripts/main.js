@@ -26,6 +26,151 @@ rhit.GameId = null;
 rhit.FB_KEY_CANVAS = "isCanvas";
 rhit.FB_KEY_CODE = "code";
 
+rhit.SearchPageController = class {
+    constructor(search) {
+        rhit.fbSearchManager.beginListening(this.updateView.bind(this));
+        this.search = search;
+    }
+    updateView() {
+        document.querySelector("#searchFor").innerHTML = "Searched For: " + this.search;
+
+        const games = sortGamesList(this.search)
+        const newList = htmlToElement('<div id="resultContainer"></div>');
+        for (let i = 0; i < games.length; i++) {
+			const game = games[i][0];
+			const newCard = this._createCard(game);
+			newCard.onclick = (event) => {
+				window.location.href = `/game.html?id=${game.id}`;
+			}
+			newList.appendChild(newCard);
+		}
+        
+        const oldList = document.querySelector("#resultContainer");
+		oldList.replaceWith(newList);
+    }
+
+    _createCard(game) {
+		return htmlToElement(`<div class="card mb-3">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <img
+              src=${game.icon}
+              class="img-fluid rounded-start"
+            />
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <h5 class="card-title">${game.title}</h5>
+              <p class="card-text">
+                ${game.description}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>`);
+	}
+}
+
+rhit.FbSearchManager = class {
+    constructor() {
+        this._documentSnapshot = {};
+        this._unsubscribe = null;
+        this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_GAMES);
+    }
+    beginListening(changeListener) {
+        this._unsubscribe = this._ref.onSnapshot((doc) => {
+            this._documentSnapshot = doc;
+            changeListener();
+        });
+    }
+    stopListening() {
+        this._unsubscribe();
+    }
+
+    get games() {
+        let gameList = [];
+        if(this._documentSnapshot == null) {
+            return gameList;
+        }
+        for(let i = 0; i < this._documentSnapshot.docs.length; i++) {
+            let doc = this._documentSnapshot.docs[i];
+            let data = doc.data();
+            gameList.push({
+                id: doc.id,
+                title: data.title,
+                icon: data.icon,
+                description: data.description
+            });
+        }
+        return gameList;
+    }
+}
+
+const last = arr => arr[arr.length - 1];
+
+// from: https://stackoverflow.com/questions/22308014/damerau-levenshtein-distance-implementation
+var levenshteinWeighted = function(seq1,seq2)
+{
+    var len1=seq1.length;
+    var len2=seq2.length;
+    var i, j;
+    var dist;
+    var ic, dc, rc;
+    var last, old, column;
+
+    var weighter={
+        insert:function(c) { return 1; },
+        delete:function(c) { return 5; },
+        replace:function(c, d) { return 10; }
+    };
+
+    /* don't swap the sequences, or this is gonna be painful */
+    if (len1 == 0 || len2 == 0) {
+        dist = 0;
+        while (len1)
+            dist += weighter.delete(seq1[--len1]);
+        while (len2)
+            dist += weighter.insert(seq2[--len2]);
+        return dist;
+    }
+
+    column = []; // malloc((len2 + 1) * sizeof(double));
+    //if (!column) return -1;
+
+    column[0] = 0;
+    for (j = 1; j <= len2; ++j)
+        column[j] = column[j - 1] + weighter.insert(seq2[j - 1]);
+
+    for (i = 1; i <= len1; ++i) {
+        last = column[0]; /* m[i-1][0] */
+        column[0] += weighter.delete(seq1[i - 1]); /* m[i][0] */
+        for (j = 1; j <= len2; ++j) {
+            old = column[j];
+            if (seq1[i - 1] == seq2[j - 1]) {
+                column[j] = last; /* m[i-1][j-1] */
+            } else {
+                ic = column[j - 1] + weighter.insert(seq2[j - 1]);      /* m[i][j-1] */
+                dc = column[j] + weighter.delete(seq1[i - 1]);          /* m[i-1][j] */
+                rc = last + weighter.replace(seq1[i - 1], seq2[j - 1]); /* m[i-1][j-1] */
+                column[j] = ic < dc ? ic : (dc < rc ? dc : rc);
+            }
+            last = old;
+        }
+    }
+
+    dist = column[len2];
+    return dist;
+}
+
+function sortGamesList(search) {
+    let games = [...rhit.fbSearchManager.games];
+    for (i=0; i<games.length; i++) {
+       games[i] = [games[i], levenshteinWeighted(search, games[i].title)];
+    }
+    games.sort((a,b) => {return a[1]-b[1]})
+    return games.slice(0,20);
+}
+
 rhit.FbPlayManager = class {
 	constructor(gameId) {
 		this._gameDocumentSnapshot = {};
@@ -891,6 +1036,17 @@ rhit.initializePage = () => {
         rhit.ECGameManager = new rhit.EditGameDataManager(gameId);
 		new rhit.EditGameDataController(gameId);
 	}
+    if (document.querySelector("#searchPage")) {
+        const search = urlParams.get("search") ?? '';
+        rhit.fbSearchManager = new rhit.FbSearchManager();
+        new rhit.SearchPageController(search);
+    }
+    document.querySelector("#searchForm").addEventListener("submit", (n) => {
+        var item = document.getElementById("search").value;
+        var form = document.getElementById("searchForm");
+        window.location.href = `/search.html?search=${item}`;
+        n.preventDefault();
+    })
 };
 
 /* Main */
