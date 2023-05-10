@@ -662,7 +662,10 @@ rhit.FbMainManager = class {
     }
     get games() {
         let gameList = [];
-        for(let i = 0; i < this._gamesSnapshot.docs.length; i++) {
+        if(this._gamesSnapshot == null) {
+            return gameList;
+        }
+        for(let i = 0; i < Math.min(this._gamesSnapshot.docs.length, 20); i++) {
             let doc = this._gamesSnapshot.docs[i];
             let data = doc.data();
             gameList.push({
@@ -675,13 +678,20 @@ rhit.FbMainManager = class {
     }
     get userGames() {
         let gamesList = this._userSnapshot.get(rhit.FB_COLLECTION_DEVELOPEDGAMES);
-        return gamesList;
+        let object = {};
+        for(let i = 0; i < gamesList.length; i++) {
+            object[gamesList[i]] = null;
+        }
+        return this.games.filter((game) => {
+            game.id in object;
+        });
     }
     beginListening(changeListener1, changeListener2) {
         let gameExists = false;
 		this._gamesRef.get().then(gamesSnapshot => {
             this._gamesSnapshot = gamesSnapshot;
             changeListener1();
+            changeListener2();
         });
         this._userRef.onSnapshot(snap => {
             this._userSnapshot = snap;
@@ -693,6 +703,12 @@ rhit.FbMainManager = class {
 	}
 
 }
+function htmlToElement(html) {
+	let template = document.createElement("TEMPLATE");
+	html = html.trim();
+	template.innerHTML = html;
+	return template.content.firstChild;
+}
 
 rhit.MainPageController = class {
     constructor() {
@@ -701,7 +717,29 @@ rhit.MainPageController = class {
     }
     updateGamesList() {
         console.log(rhit.fbMainManager.games);
+        let games = rhit.fbMainManager.games;
+        const newList = htmlToElement(`<div id="gameListContainer" class="columns"></div>`);
+		// Fill the photoListContainer with photo cards using a loop
+		for (let i = 0; i < games.length; i++) {
+			const g = games[i];
+			const newCard = this.createCard(g);
+			newCard.addEventListener("click", (event) => {
+				window.location.href = `/game.html?id=${p.id}`;
+			});
+			newList.appendChild(newCard);
+		}
+		// Remove the old photoListContainer, and put in the new photoListContainer
+		const oldList = document.querySelector("#gameListContainer");
+		// Why hide, etc, when replaceWith exists?
+		oldList.replaceWith(newList);
     }
+    
+    createCard(game) {
+		return htmlToElement(`<div class="pin" data-id="${game.id}">
+          <img class="img-fluid" src="${game.icon}">
+          <p class="caption">${game.title}</p>
+      </div>`);
+	}
     updateUserGamesList() {
         console.log(rhit.fbMainManager.userGames);
     }
