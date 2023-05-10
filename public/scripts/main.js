@@ -356,9 +356,12 @@ rhit.EditGameDataController = class {
 rhit.EditGameDataManager = class {
     constructor(gameId) {
         this._documentSnapshot = {};
-        this._unsubscribe = null;
-        console.log("Created EditGameDataManager.");
+        this._userDocumentSnapshot = {};
+        this._gameUnsubscribe = null;
+        this._userUnsubscribe = null;
+        console.log("Created editGameDataManager.");
         rhit.gameId = gameId;
+        this._userRef = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbAuthManager.uid); // Connect to developed games list user made
         if (!gameId) {
             console.log("We're creating a new game!");
             this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_GAMES);
@@ -370,7 +373,7 @@ rhit.EditGameDataManager = class {
     }
     beginListening(changeListener) {
         let gameExists = false;
-		this._unsubscribe = this._ref.onSnapshot((doc) => {
+		this._gameUnsubscribe = this._ref.onSnapshot((doc) => {
 			if (doc.exists) {
                 gameExists = true;
 				console.log("Document data:", doc.data());
@@ -384,9 +387,16 @@ rhit.EditGameDataManager = class {
                 }
 			}
 		});
+        this._userUnsubscribe = this._userRef.onSnapshot((doc) => {
+			if (doc.exists) {
+				this._userDocumentSnapshot = doc;
+				changeListener();
+			}
+		});
 	}
 	stopListening() {
-		this._unsubscribe();
+		this._gameUnsubscribe();
+        this._userUnsubscribe();
 	}
 
     // If we're in edit mode, hide the publish button and show the other buttons
@@ -536,7 +546,19 @@ rhit.EditGameDataManager = class {
         })
         .then((docRef) => {
             console.log("Game published with ID: ", docRef.id);
-            window.location.href = "index.html";
+            // Add the new game as a developed game under the user.
+            let developedGames = this.developedGames;
+            developedGames.push(docRef.id);
+            this._userRef.update({
+                [rhit.FB_KEY_DEVELOPEDGAMES]: developedGames,
+            })
+            .then(() => {
+                console.log("Added game to developed games");
+                window.location.href = "index.html";
+            })
+            .catch((error) => {
+                console.error("Error adding game to developed games: ", error);
+            })
         })
         .catch((error) => {
             console.error("Error adding document: ", error);
@@ -613,6 +635,24 @@ rhit.EditGameDataManager = class {
 
     deleteGame() {
         console.log("Deleting the following game: ", this._ref);
+        // Remove the game id from the user list of developed games
+        let developedGames = this.developedGames;
+        let removedGameId = rhit.GameId;
+        for (let i = 0; i < developedGames.length; i++) {
+            if (developedGames[i] == removedGameId) {
+                delete developedGames[i];
+                break;
+            }
+        }
+        this._userRef.update({
+            [rhit.FB_KEY_DEVELOPEDGAMES]: developedGames,
+        })
+        .then(() => {
+            console.log("Removed game from developed games");
+        })
+        .catch((error) => {
+            console.error("Error removing game from developed games: ", error);
+        })
         return this._ref.delete();
     }
 
@@ -636,6 +676,9 @@ rhit.EditGameDataManager = class {
     }
     get description() {
         return this._documentSnapshot.get(rhit.FB_KEY_DESCRIPTION);
+    }
+    get developedGames() {
+        return this._gameDocumentSnapshot.get(rhit.FB_COLLECTION_DEVELOPEDGAMES);
     }
 
 }
