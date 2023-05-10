@@ -703,6 +703,7 @@ rhit.checkForRedirects = function() {
 rhit.FbMainManager = class {
     constructor() {
         this._gamesRef = firebase.firestore().collection(rhit.FB_COLLECTION_GAMES);
+		this._playedGamesRef = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbAuthManager.uid).collection(rhit.FB_COLLECTION_PLAYEDGAMES);
 		this._userRef = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbAuthManager.uid)
     }
     get games() {
@@ -722,6 +723,9 @@ rhit.FbMainManager = class {
         return gameList;
     }
     get userGames() {
+        if(this._userSnapshot == undefined) {
+            return [];
+        }
         let gamesList = this._userSnapshot.get(rhit.FB_COLLECTION_DEVELOPEDGAMES);
         let object = {};
         for(let i = 0; i < gamesList.length; i++) {
@@ -731,13 +735,31 @@ rhit.FbMainManager = class {
             return game.id in object;
         });
     }
-    beginListening(changeListener1, changeListener2) {
+    get favorited() {
+        if(this._playedSnapshot == undefined) {
+            return [];
+        }
+        let object = {};
+        for(let i = 0; i < Math.min(this._playedSnapshot.docs.length, 20); i++) {
+            let doc = this._playedSnapshot.docs[i];
+            object[doc.id] = null;
+        }
+        return this.games.filter((game) => {
+            return game.id in object;
+        });
+    }
+    beginListening(changeListener1, changeListener2, changeListener3) {
         let gameExists = false;
-		this._gamesRef.get().then(gamesSnapshot => {
+		this._gamesRef.onSnapshot(gamesSnapshot => {
             this._gamesSnapshot = gamesSnapshot;
             changeListener1();
             changeListener2();
+            changeListener3();
         });
+        this._playedGamesRef.onSnapshot(playedGamesSnap => {
+            this._playedSnapshot = playedGamesSnap;
+            changeListener3();
+        })
         this._userRef.onSnapshot(snap => {
             this._userSnapshot = snap;
             changeListener2();
@@ -758,7 +780,25 @@ function htmlToElement(html) {
 rhit.MainPageController = class {
     constructor() {
 
-        rhit.fbMainManager.beginListening(this.updateGamesList.bind(this), this.updateUserGamesList.bind(this));
+        rhit.fbMainManager.beginListening(this.updateGamesList.bind(this), this.updateUserGamesList.bind(this), this.updateFavoritedGamesList.bind(this));
+    }
+    updateFavoritedGamesList() {
+        console.log(rhit.fbMainManager.games);
+        let games = rhit.fbMainManager.favorited;
+        const newList = htmlToElement(`<div id="favoriteGameListContainer" class="columns"></div>`);
+		// Fill the photoListContainer with photo cards using a loop
+		for (let i = 0; i < games.length; i++) {
+			const g = games[i];
+			const newCard = this.createCard(g);
+			newCard.addEventListener("click", (event) => {
+				window.location.href = `/play.html?id=${g.id}`;
+			});
+			newList.appendChild(newCard);
+		}
+		// Remove the old photoListContainer, and put in the new photoListContainer
+		const oldList = document.querySelector("#favoriteGameListContainer");
+		// Why hide, etc, when replaceWith exists?
+		oldList.replaceWith(newList);
     }
     updateGamesList() {
         console.log(rhit.fbMainManager.games);
