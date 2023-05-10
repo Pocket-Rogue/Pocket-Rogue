@@ -726,7 +726,7 @@ rhit.FbMainManager = class {
             object[gamesList[i]] = null;
         }
         return this.games.filter((game) => {
-            game.id in object;
+            return game.id in object;
         });
     }
     beginListening(changeListener1, changeListener2) {
@@ -785,6 +785,21 @@ rhit.MainPageController = class {
 	}
     updateUserGamesList() {
         console.log(rhit.fbMainManager.userGames);
+        let games = rhit.fbMainManager.userGames;
+        const newList = htmlToElement(`<div id="userGameListContainer" class="columns"></div>`);
+		// Fill the photoListContainer with photo cards using a loop
+		for (let i = 0; i < games.length; i++) {
+			const g = games[i];
+			const newCard = this.createCard(g);
+			newCard.addEventListener("click", (event) => {
+				window.location.href = `/game.html?id=${p.id}`;
+			});
+			newList.appendChild(newCard);
+		}
+		// Remove the old photoListContainer, and put in the new photoListContainer
+		const oldList = document.querySelector("#userGameListContainer");
+		// Why hide, etc, when replaceWith exists?
+		oldList.replaceWith(newList);
     }
 }
 
