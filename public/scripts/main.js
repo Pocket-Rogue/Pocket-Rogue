@@ -887,7 +887,10 @@ rhit.FbMainManager = class {
         let object = {};
         for(let i = 0; i < Math.min(this._playedSnapshot.docs.length, 20); i++) {
             let doc = this._playedSnapshot.docs[i];
-            object[doc.id] = null;
+            if(doc.data().favorited) {
+
+                object[doc.id] = null;
+            }
         }
         return this.games.filter((game) => {
             return game.id in object;
