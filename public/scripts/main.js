@@ -110,8 +110,7 @@ rhit.FbSearchManager = class {
 const last = arr => arr[arr.length - 1];
 
 // from: https://stackoverflow.com/questions/22308014/damerau-levenshtein-distance-implementation
-var levenshteinWeighted = function(seq1,seq2)
-{
+function levenshteinWeighted(seq1,seq2) {
     var len1=seq1.length;
     var len2=seq2.length;
     var i, j;
@@ -120,9 +119,21 @@ var levenshteinWeighted = function(seq1,seq2)
     var last, old, column;
 
     var weighter={
-        insert:function(c) { return 1; },
-        delete:function(c) { return 5; },
-        replace:function(c, d) { return 10; }
+        insert(c) { 
+            if(/\s/.test(c)) {
+                return 0.1;
+            }
+            return 1; 
+        },
+        delete(c) {
+            if(/\s/.test(c)) {
+                return 0.1;
+            }
+            return 5;
+        },
+        replace(c, d) {
+            return 10;
+        }
     };
 
     /* don't swap the sequences, or this is gonna be painful */
@@ -1117,7 +1128,7 @@ rhit.initializePage = () => {
     document.querySelector("#searchForm").addEventListener("submit", (n) => {
         var item = document.getElementById("search").value;
         var form = document.getElementById("searchForm");
-        window.location.href = `/search.html?search=${item}`;
+        window.location.href = `/search.html?search=${encodeURIComponent(item)}`;
         n.preventDefault();
     })
 };
