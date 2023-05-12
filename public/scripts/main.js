@@ -18,6 +18,7 @@ rhit.FB_COLLECTION_PLAYEDGAMES = "playedGames";
 rhit.FB_COLLECTION_DEVELOPEDGAMES = "developedGames";
 rhit.FB_KEY_FAVORITE = "favorited";
 rhit.FB_KEY_RATED = "isRated";
+rhit.FB_KEY_RATING = "starRating";
 rhit.fbSingleGameManager = null;
 rhit.fbAuthManager = null;
 rhit.ECGameManager = null;
@@ -219,9 +220,25 @@ rhit.GamePlayPageController = class {
 
 rhit.GamePageController = class {
 	constructor() {
-		document.querySelector("#review").onclick = (event) => {
-			
+        document.querySelector("#starButton").onclick = (event) => {
+			rhit.fbSingleGameManager.toggleFavorate();
 		}
+        document.querySelector("#review").onclick = (event) => {
+            rhit.fbSingleGameManager.rate(rhit.fbSingleGameManager.myRating);
+            this.updateView()
+        }
+        for(let i=1;i<6;i++){
+            document.querySelector("#star"+i).onclick = (event) => {
+                rhit.fbSingleGameManager.rate(i);
+                this.updateView()
+            }
+        }
+        document.querySelector("#cancel").onclick = (event) => {
+            rhit.fbSingleGameManager.cancelRating();
+        }
+        document.querySelector("#submit").onclick = (event) => {
+            rhit.fbSingleGameManager.updateRating();
+        }
 		rhit.fbSingleGameManager.beginListening(this.updateView.bind(this));
 	}
 	updateView() {
@@ -232,6 +249,10 @@ rhit.GamePageController = class {
 		document.querySelector("#author").innerHTML = rhit.fbSingleGameManager.author;
 		document.querySelector("#description").innerHTML = rhit.fbSingleGameManager.description;
 
+        for(let i=1;i<6;i++){
+            document.querySelector("#star"+i).innerHTML = (rhit.fbSingleGameManager.unsavedRating < i ? "<i class='material-icons'>star_border</i>" : "<i class='material-icons'>star</i>")
+        }
+
 		const stars = (rhit.fbSingleGameManager.stars == 0 ? 0 : Math.round(2 * rhit.fbSingleGameManager.stars / rhit.fbSingleGameManager.numRatings) / 2);
 		const intStars = parseInt(stars);
 		document.querySelector("#reveiws").innerHTML = "<i class='material-icons'>star</i>".repeat(intStars) +
@@ -240,23 +261,22 @@ rhit.GamePageController = class {
 			"&nbsp;" + rhit.fbSingleGameManager.numRatings + " reviews";
 		document.querySelector("#starButton").innerHTML = (rhit.fbSingleGameManager.favorited ? "<i class='material-icons'>star</i>" : "<i class='material-icons'>star_border</i>")
 		document.querySelector("#review").innerHTML = (rhit.fbSingleGameManager.rated ? "Edit Star Rating" : "Add Star Rating")
-		// if (rhit.fbSingleGameManager.author == rhit.fbAuthManager.uid) {
-		// 	document.querySelector("#menuEdit").style.display = "Flex";
-		// 	document.querySelector("#menuDelete").style.display = "Flex";
-		// }
 	}
 }
 
 rhit.FbSingleGameManager = class {
-	constructor(gameId, userId) {
+	constructor(gameId) {
         this.id = gameId;
+        this.unsavedRating = 0;
 		this._gameDocumentSnapshot = {};
 		this._userGameDocumentSnapshot = null;
+        this._userDocumentSnapshot = {};
 		this._gameUnsubscribe = null;
 		this._userGameUnsubscribe = null;
+		this._userUnsubscribe = null;
 		this._gameRef = firebase.firestore().collection(rhit.FB_COLLECTION_GAMES).doc(gameId);
 		this._userGameRef = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbAuthManager.uid).collection(rhit.FB_COLLECTION_PLAYEDGAMES).doc(gameId);
-		// this._userGameRef = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc("adkinsda").collection("playedGames").doc(gameId);
+		this._userRef = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbAuthManager.uid).collection(rhit.FB_COLLECTION_PLAYEDGAMES);
 	}
 	beginListening(changeListener) {
 		this._gameUnsubscribe = this._gameRef.onSnapshot((doc) => {
@@ -271,11 +291,53 @@ rhit.FbSingleGameManager = class {
 				changeListener();
 			}
 		});
+        this._userUnsubscribe = this._userRef.onSnapshot((doc) => {
+            this._userDocumentSnapshot = doc;
+            changeListener();
+        });
 	}
 	stopListening() {
 		this._gameUnsubscribe();
 		this._userGameUnsubscribe();
+		this._userUnsubscribe();
 	}
+    addToPlayed() {
+        for(let i = 0; i < this._userDocumentSnapshot.docs.length; i++) {
+            let doc = this._userDocumentSnapshot.docs[i];
+            if (doc.id == this.id){
+                return true;
+            }
+        }
+        this._userRef.doc(this.id).set({
+            [rhit.FB_KEY_FAVORITE]: false,
+            [rhit.FB_KEY_RATED]: false,
+            [rhit.FB_KEY_RATING]: 0,
+        })
+        return true;
+    }
+    toggleFavorate() {
+        this.addToPlayed()
+		this._userGameRef.update({
+            [rhit.FB_KEY_FAVORITE]: !this.favorited,
+		})
+	}
+    rate(rating) {
+        this.unsavedRating = rating;
+    }
+    cancelRating() {
+        this.unsavedRating = this.myRating;
+    }
+    updateRating() {
+        this.addToPlayed()
+        this._gameRef.update({
+            [rhit.FB_KEY_NUMRATINGS]: (this.rated ? this.numRatings : this.numRatings + 1),
+            [rhit.FB_KEY_STARS]: (this.rated ? this.stars - this.myRating + this.unsavedRating : this.stars + this.unsavedRating),
+        })
+        this._userGameRef.update({
+            [rhit.FB_KEY_RATING]: this.unsavedRating,
+            [rhit.FB_KEY_RATED]: true,
+		})
+    }
 
 	get image() {
 		return this._gameDocumentSnapshot.get(rhit.FB_KEY_IMAGE);
@@ -312,6 +374,13 @@ rhit.FbSingleGameManager = class {
 	get rated() {
 		if (this._userGameDocumentSnapshot != null) {
 			return this._userGameDocumentSnapshot.get(rhit.FB_KEY_RATED);
+		} else {
+			return null;
+		}
+	}
+    get myRating() {
+		if (this._userGameDocumentSnapshot != null) {
+			return this._userGameDocumentSnapshot.get(rhit.FB_KEY_RATING);
 		} else {
 			return null;
 		}
@@ -1009,6 +1078,7 @@ rhit.initializePage = () => {
 		rhit.fbSingleGameManager = new rhit.FbSingleGameManager(gameId);
 		new rhit.GamePageController();
 	}
+    
 	if (document.querySelector("#loginPage")) {
 		console.log("Login page");
 		new rhit.LoginPageController();
