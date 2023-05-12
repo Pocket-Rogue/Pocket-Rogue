@@ -436,7 +436,9 @@ rhit.FbAuthManager = class FbAuthManager {
 	#user = null;
 	#unsubscribe = null;
 	constructor() {
-
+        this._documentSnapshot = null;
+		this._unsubscribe = null;
+		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_USERS);
 	}
 	beginListening(changeListener) {
 		firebase.auth().onAuthStateChanged((user) => {
@@ -449,7 +451,24 @@ rhit.FbAuthManager = class FbAuthManager {
 			console.log(`#${mulberry32(seed[0])().toString(16).padStart(6,"0")}`);
 			changeListener?.();
 		})
+        this._unsubscribe = this._ref.onSnapshot((doc) => {
+            this._documentSnapshot = doc;
+            changeListener();
+        });
 	}
+    addUser() {
+        console.log("1")
+        for(let i = 0; i < this._documentSnapshot.docs.length; i++) {
+            let doc = this._documentSnapshot.docs[i];
+            if (doc.id == this.uid){
+                return true;
+            }
+        }
+        console.log("2")
+        // this._ref.doc(this.uid).set({});
+        this._ref.doc(this.uid).colection("gamesPlayed").doc("null").set({});
+        return true;
+    }
 	signIn() {
 		Rosefire.signIn("8d1a0a7f-3d9e-4427-ac16-22625c43b0fb", (err, rfUser) => {
 			if (err) {
@@ -466,9 +485,9 @@ rhit.FbAuthManager = class FbAuthManager {
 				} else {
 					console.error("Custom auth error", errorCode, errorMessage);
 				}
-			})
+			}).then(() => {this.addUser()})
 			// TODO: Use the rfUser.token with your server.
-		  });
+		});
 		  
 	}
 	signOut() {
