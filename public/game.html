@@ -41,9 +41,30 @@
       </div>
       <p id="reveiws">Loading...</p>
       <button id="starButton" type="button" class="btn bmd-btn-fab"><i class="material-icons">star_border</i></button>
-      <button id="review" type="button" class="btn bmd-btn-primary">Add Star Rating</button>
+      <button id="review" class="btn bmd-btn-primary" type="button" data-toggle="modal" data-target="#gameRatingModal">Add Star Rating</button>
     </div>
     <p id="description">Loading...</p>
+  </div>
+  <div class="modal fade" id="gameRatingModal" tabindex="-1" role="dialog" aria-labelledby="gameRatingModalLable">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Rate This Game</h4>
+        </div>
+        <div class="rating-stars-container">
+          <div class="rating-stars">
+            <button id="star1" type="button" class="btn btn-tertiary"><i class='material-icons'>star</i></button>
+            <button id="star2" type="button" class="btn btn-tertiary"><i class='material-icons'>star</i></button>
+            <button id="star3" type="button" class="btn btn-tertiary"><i class='material-icons'>star</i></button>
+            <button id="star4" type="button" class="btn btn-tertiary"><i class='material-icons'>star</i></button>
+            <button id="star5" type="button" class="btn btn-tertiary"><i class='material-icons'>star</i></button>
+        </div>
+        <div class="modal-footer">
+          <button id="cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button id="submit" type="button" class="btn btn-primary btn-ls-blue" data-dismiss="modal">Submit</button>
+        </div>
+      </div>
+    </div>
   </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>
@@ -54,8 +75,7 @@
   <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
   <script src="/__/firebase/7.18.0/firebase-firestore.js"></script>
   <script src="/__/firebase/init.js"></script>
-  <!-- <script src="scripts/neil.js"></script> -->
-  <script src="scripts/main.js"></script>
+  <script src="scripts/game.js"></script>
 </body>
 
 </html>
