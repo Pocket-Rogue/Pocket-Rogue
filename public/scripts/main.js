@@ -74,7 +74,7 @@ rhit.SearchPageController = class {
 
 rhit.FbSearchManager = class {
     constructor() {
-        this._documentSnapshot = {};
+        this._documentSnapshot = null;
         this._unsubscribe = null;
         this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_GAMES);
     }
@@ -450,6 +450,10 @@ rhit.FbAuthManager = class FbAuthManager {
 			$("#profileImage").css("background-color", `#${Math.floor(0xFFFFFF * mulberry32(seed[0])()).toString(16).padStart(6,"0")}`)
 			console.log(`#${mulberry32(seed[0])().toString(16).padStart(6,"0")}`);
 			changeListener?.();
+
+            if (this._documentSnapshot != null && user?.uid && !this.isInUsers()) {
+                this.addUser();
+            }
 		})
         this._unsubscribe = this._ref.onSnapshot((doc) => {
             this._documentSnapshot = doc;
@@ -457,17 +461,26 @@ rhit.FbAuthManager = class FbAuthManager {
         });
 	}
     addUser() {
-        console.log("1")
+        this._ref.doc(this.uid).set({
+            [rhit.FB_COLLECTION_DEVELOPEDGAMES]: []
+        });
+        this._ref.doc(this.uid).collection("gamesPlayed").doc("null").set({})
+        .then(() => {window.location.href = "/index.html"})
+    }
+    isInUsers() {
+        if (this._documentSnapshot == null || this.#user == null) {
+            return false;
+        }
         for(let i = 0; i < this._documentSnapshot.docs.length; i++) {
             let doc = this._documentSnapshot.docs[i];
-            if (doc.id == this.uid){
+            if (doc.id == this.uid) {
+                console.log(doc.id)
+                console.log(doc)
+                console.log(this.uid)
                 return true;
             }
         }
-        console.log("2")
-        // this._ref.doc(this.uid).set({});
-        this._ref.doc(this.uid).colection("gamesPlayed").doc("null").set({});
-        return true;
+        return false;
     }
 	signIn() {
 		Rosefire.signIn("8d1a0a7f-3d9e-4427-ac16-22625c43b0fb", (err, rfUser) => {
@@ -485,7 +498,7 @@ rhit.FbAuthManager = class FbAuthManager {
 				} else {
 					console.error("Custom auth error", errorCode, errorMessage);
 				}
-			}).then(() => {this.addUser()})
+			})
 			// TODO: Use the rfUser.token with your server.
 		});
 		  
@@ -930,11 +943,7 @@ rhit.EditGameDataManager = class {
 }
 
 rhit.checkForRedirects = function() {
-	if (document.querySelector("#loginPage")) {
-		if(rhit.fbAuthManager.isSignedIn) {
-			window.location.href = "/index.html";
-		}
-	} else {
+	if (!document.querySelector("#loginPage")) {
 		if(document.querySelector("#mainPage")) {
 			return;
 		}
@@ -1154,6 +1163,7 @@ rhit.initializePage = () => {
 
 /* Main */
 /** function and class syntax examples */
+let Initialized = false;
 rhit.main = function () {
 	console.log("Ready");
 	rhit.fbAuthManager = new rhit.FbAuthManager();
@@ -1163,7 +1173,10 @@ rhit.main = function () {
 		// Check for redirects
 		rhit.checkForRedirects();
 		// Initialize page
-		rhit.initializePage();
+        if (!Initialized) {
+            Initialized = true;
+            rhit.initializePage();
+        }
 	});
 };
 
