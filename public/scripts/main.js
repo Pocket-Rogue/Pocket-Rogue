@@ -453,6 +453,8 @@ rhit.FbAuthManager = class FbAuthManager {
 
             if (this._documentSnapshot != null && user?.uid && !this.isInUsers()) {
                 this.addUser();
+            } else if (this._documentSnapshot != null && user?.uid) {
+                window.location.href = "/index.html"
             }
 		})
         this._unsubscribe = this._ref.onSnapshot((doc) => {
