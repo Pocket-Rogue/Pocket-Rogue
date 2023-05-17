@@ -156,3 +156,10 @@ body {
     max-height: 18px;
     overflow: hidden;
 }
+
+.dropdown-menu-right {
+    position: absolute;
+    left: 174px;
+    top: 64px;
+    will-change: top, left;
+}
