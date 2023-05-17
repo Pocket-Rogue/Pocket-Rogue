@@ -403,6 +403,11 @@ rhit.LoginPageController = class LoginPageController {
 		document.querySelector("#rosefireButton").addEventListener("click", (event) => {
 			rhit.fbAuthManager.signIn();
 		});
+        rhit.fbAuthManager.beginListening(() => {
+            if(rhit.fbAuthManager.isSignedIn) {
+                document.querySelector("#rosefireButton").innerHTML = "Prestige?"
+            }
+        })
 	}
 }
 
@@ -442,7 +447,7 @@ rhit.FbAuthManager = class FbAuthManager {
 	}
 	beginListening(changeListener) {
 		firebase.auth().onAuthStateChanged((user) => {
-			let uid = user?.uid ?? "Anonymous";
+			let uid = user?.uid ?? "A";
 			this.#user = user;
 			$("#profileImage").text(uid[0].toUpperCase())
 			var seed = cyrb128(uid);
@@ -978,7 +983,7 @@ rhit.FbMainManager = class {
         return gameList;
     }
     get userGames() {
-        if(this._userSnapshot == undefined) {
+        if(this._userSnapshot?.exists != true) {
             return [];
         }
         let gamesList = this._userSnapshot.get(rhit.FB_COLLECTION_DEVELOPEDGAMES);
