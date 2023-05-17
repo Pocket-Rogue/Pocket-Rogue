@@ -106,6 +106,17 @@ body {
     margin-left: auto;
 }
 
+#addGameButton {
+    background: #800000;
+    bottom: 10px;
+    color: white;
+    position: fixed;
+    right: 10px;
+    z-index: 999;
+    visibility: hidden;
+
+}
+
 #review {
     grid-row-start: 2;
     grid-row-end: 2;
