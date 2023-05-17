@@ -1042,7 +1042,6 @@ function htmlToElement(html) {
 
 rhit.MainPageController = class {
     constructor() {
-
         rhit.fbMainManager.beginListening(this.updateGamesList.bind(this), this.updateUserGamesList.bind(this), this.updateFavoritedGamesList.bind(this));
     }
     updateFavoritedGamesList() {
