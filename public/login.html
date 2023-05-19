@@ -12,7 +12,6 @@
 </head>
 
 <body>
-
   <nav class="navbar navbar-dark fixed-top">
     <div class="navbar-portion">
       <button id="navButton" type="button" class="btn bmd-btn-fab" onclick="history.back()"><i class="material-icons">arrow_back</i></button>
@@ -23,9 +22,12 @@
         <div class="input-group navbar-portion">
           <input type="text" class="form-control" placeholder="Search..." aria-label="Search..." id="search">
           <button id="searchSubmit" type="submit" class="btn bmd-btn-fab"><i class="material-icons">search</i></button>
-          <button type="button" class="btn bmd-btn-fab">
+          <button type="button" class="btn bmd-btn-fab dropdown-toggle" type="button" id="lr1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <div id="profileImage"></div>
           </button>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="lr1">
+            <button class="dropdown-item" type="button" id="menuSignOut"></button>
+          </div>
         </div>
       </form>
     </div>

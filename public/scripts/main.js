@@ -272,6 +272,14 @@ rhit.GamePageController = class {
 			"&nbsp;" + rhit.fbSingleGameManager.numRatings + " reviews";
 		document.querySelector("#starButton").innerHTML = (rhit.fbSingleGameManager.favorited ? "<i class='material-icons'>star</i>" : "<i class='material-icons'>star_border</i>")
 		document.querySelector("#review").innerHTML = (rhit.fbSingleGameManager.rated ? "Edit Star Rating" : "Add Star Rating")
+
+        if (rhit.fbAuthManager.isSignedIn) {
+            document.querySelector("#starButton").style.display = "Flex";
+            document.querySelector("#review").style.display = "Flex";
+        } else {
+            document.querySelector("#starButton").style.display = "None";
+            document.querySelector("#review").style.display = "None";
+        }
 	}
 }
 
@@ -461,6 +469,16 @@ rhit.FbAuthManager = class FbAuthManager {
             } else if (this._documentSnapshot != null && user?.uid) {
                 window.location.href = "/index.html";
             }
+
+            document.querySelector("#menuSignOut").onclick = (event) => {
+                if (this.isSignedIn) {
+                    this.signOut();
+				    window.location.href = "";
+                } else {
+				    window.location.href = "/login.html";
+                }
+            }
+            document.querySelector("#menuSignOut").innerHTML = (rhit.fbAuthManager.isSignedIn ? `<i class="material-icons">logout</i>&nbsp;&nbsp;&nbsp;Sign Out` : `<i class="material-icons">login</i>&nbsp;&nbsp;&nbsp;Sign In`);
 		})
         this._unsubscribe = this._ref.onSnapshot((doc) => {
             this._documentSnapshot = doc;
@@ -951,7 +969,7 @@ rhit.EditGameDataManager = class {
 
 rhit.checkForRedirects = function() {
 	if (!document.querySelector("#loginPage")) {
-		if(document.querySelector("#mainPage")) {
+		if(document.querySelector("#mainPage") || document.querySelector("#searchPage") || document.querySelector("#gamePage") || document.querySelector("#playPage")) {
 			return;
 		}
 		if(!rhit.fbAuthManager.isSignedIn) {
