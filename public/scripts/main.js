@@ -100,7 +100,8 @@ rhit.FbSearchManager = class {
                 id: doc.id,
                 title: data.title,
                 icon: data.icon,
-                description: data.description
+                description: data.description,
+                approved: data.approved
             });
         }
         return gameList;
@@ -176,11 +177,15 @@ function levenshteinWeighted(seq1,seq2) {
 
 function sortGamesList(search) {
     let games = [...rhit.fbSearchManager.games];
-    for (i=0; i<games.length; i++) {
-       games[i] = [games[i], levenshteinWeighted(search, games[i].title)];
+    for (i=games.length - 1; i>=0; i--) {
+        if (games[i].approved) {
+            games[i] = [games[i], levenshteinWeighted(search, games[i].title)];
+        } else {
+            games.splice(i, 1);
+        }
     }
     games.sort((a,b) => {return a[1]-b[1]})
-    return games.slice(0,20);
+    return games.slice(0, 20);
 }
 
 rhit.FbPlayManager = class {
@@ -193,7 +198,9 @@ rhit.FbPlayManager = class {
 		this._gameRef.onSnapshot((doc) => {
 			if (doc.exists) {
 				this._gameDocumentSnapshot = doc;
-				console.log(this._gameDocumentSnapshot);
+                if (!doc.get(rhit.FB_KEY_APPROVED)) {
+                    window.location.href = "/index.html";
+                }
 				changeListener();
 			}
 		});
@@ -209,7 +216,6 @@ rhit.FbPlayManager = class {
 		return this._gameDocumentSnapshot.get(rhit.FB_KEY_CANVAS);
 	}
 }
-
 
 rhit.GamePlayPageController = class {
 	constructor() {
@@ -227,7 +233,6 @@ rhit.GamePlayPageController = class {
         document.body.appendChild(script);
 	}
 }
-
 
 rhit.GamePageController = class {
 	constructor() {
@@ -301,6 +306,9 @@ rhit.FbSingleGameManager = class {
 		this._gameUnsubscribe = this._gameRef.onSnapshot((doc) => {
 			if (doc.exists) {
 				this._gameDocumentSnapshot = doc;
+                if (!doc.get(rhit.FB_KEY_APPROVED)) {
+                    window.location.href = "/index.html";
+                }
 				changeListener();
 			}
 		});
@@ -488,9 +496,7 @@ rhit.FbAuthManager = class FbAuthManager {
     addUser() {
         this._ref.doc(this.uid).set({
             [rhit.FB_COLLECTION_DEVELOPEDGAMES]: []
-        });
-        this._ref.doc(this.uid).collection("gamesPlayed").doc("null").set({})
-        .then(() => {window.location.href = "/index.html"})
+        }).then(() => {window.location.href = "/index.html"})
     }
     isInUsers() {
         if (this._documentSnapshot == null || this.#user == null) {
@@ -999,6 +1005,24 @@ rhit.FbMainManager = class {
             });
         }
         return gameList;
+    }
+    get games() {
+        let gameList = [];
+        if(this._gamesSnapshot == null) {
+            return gameList;
+        }
+        for(let i = 0; i < this._gamesSnapshot.docs.length; i++) {
+            let doc = this._gamesSnapshot.docs[i];
+            let data = doc.data();
+            if (data.approved) {
+                gameList.push({
+                    id: doc.id,
+                    title: data.title,
+                    icon: data.icon
+                });
+            }
+        }
+        return gameList.slice(0, 20);
     }
     get userGames() {
         if(this._userSnapshot?.exists != true) {
