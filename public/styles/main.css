@@ -102,8 +102,8 @@ body {
     grid-row-start: 1;
     grid-row-end: 1;
     grid-column-start: 2;
-    margin-right: 100;
     margin-left: auto;
+    padding: 16px;
 }
 
 #addGameButton {
