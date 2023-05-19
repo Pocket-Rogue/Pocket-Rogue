@@ -27,6 +27,230 @@ rhit.GameId = null;
 rhit.FB_KEY_CANVAS = "isCanvas";
 rhit.FB_KEY_CODE = "code";
 
+function htmlToElement(html) {
+	let template = document.createElement("TEMPLATE");
+	html = html.trim();
+	template.innerHTML = html;
+	return template.content.firstChild;
+}
+
+// from: https://stackoverflow.com/questions/22308014/damerau-levenshtein-distance-implementation
+function levenshteinWeighted(seq1,seq2) {
+    var len1=seq1.length;
+    var len2=seq2.length;
+    var i, j;
+    var dist;
+    var ic, dc, rc;
+    var last, old, column;
+
+    var weighter={
+        insert(c) { 
+            if(/\s/.test(c)) {
+                return 0.1;
+            }
+            return 1; 
+        },
+        delete(c) {
+            if(/\s/.test(c)) {
+                return 0.1;
+            }
+            return 5;
+        },
+        replace(c, d) {
+            return 10;
+        }
+    };
+
+    /* don't swap the sequences, or this is gonna be painful */
+    if (len1 == 0 || len2 == 0) {
+        dist = 0;
+        while (len1)
+            dist += weighter.delete(seq1[--len1]);
+        while (len2)
+            dist += weighter.insert(seq2[--len2]);
+        return dist;
+    }
+
+    column = []; // malloc((len2 + 1) * sizeof(double));
+    //if (!column) return -1;
+
+    column[0] = 0;
+    for (j = 1; j <= len2; ++j)
+        column[j] = column[j - 1] + weighter.insert(seq2[j - 1]);
+
+    for (i = 1; i <= len1; ++i) {
+        last = column[0]; /* m[i-1][0] */
+        column[0] += weighter.delete(seq1[i - 1]); /* m[i][0] */
+        for (j = 1; j <= len2; ++j) {
+            old = column[j];
+            if (seq1[i - 1] == seq2[j - 1]) {
+                column[j] = last; /* m[i-1][j-1] */
+            } else {
+                ic = column[j - 1] + weighter.insert(seq2[j - 1]);      /* m[i][j-1] */
+                dc = column[j] + weighter.delete(seq1[i - 1]);          /* m[i-1][j] */
+                rc = last + weighter.replace(seq1[i - 1], seq2[j - 1]); /* m[i-1][j-1] */
+                column[j] = ic < dc ? ic : (dc < rc ? dc : rc);
+            }
+            last = old;
+        }
+    }
+
+    dist = column[len2];
+    return dist;
+}
+
+function sortGamesList(search) {
+    let games = [...rhit.fbSearchManager.games];
+    for (i=games.length - 1; i>=0; i--) {
+        if (games[i].approved) {
+            games[i] = [games[i], levenshteinWeighted(search, games[i].title)];
+        } else {
+            games.splice(i, 1);
+        }
+    }
+    games.sort((a,b) => {return a[1]-b[1]})
+    return games.slice(0, 20);
+}
+
+function cyrb128(str) {
+    let h1 = 1779033703, h2 = 3144134277,
+        h3 = 1013904242, h4 = 2773480762;
+    for (let i = 0, k; i < str.length; i++) {
+        k = str.charCodeAt(i);
+        h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+        h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+        h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+        h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+    }
+    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+    h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+    h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+    h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+    return [(h1^h2^h3^h4)>>>0, (h2^h1)>>>0, (h3^h1)>>>0, (h4^h1)>>>0];
+}
+
+function mulberry32(a) {
+    return function() {
+      var t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+}
+
+
+rhit.LoginPageController = class LoginPageController {
+	constructor() {
+		document.querySelector("#rosefireButton").addEventListener("click", (event) => {
+			rhit.fbAuthManager.signIn();
+		});
+        rhit.fbAuthManager.beginListening(() => {
+            if(rhit.fbAuthManager.isSignedIn) {
+                document.querySelector("#rosefireButton").innerHTML = "Prestige?"
+            }
+        })
+	}
+}
+
+rhit.FbAuthManager = class FbAuthManager {
+	#user = null;
+	#unsubscribe = null;
+	constructor() {
+        this._documentSnapshot = null;
+		this._unsubscribe = null;
+		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_USERS);
+	}
+	beginListening(changeListener) {
+		firebase.auth().onAuthStateChanged((user) => {
+			let uid = user?.uid ?? "A";
+			this.#user = user;
+			$("#profileImage").text(uid[0].toUpperCase())
+			var seed = cyrb128(uid);
+			
+			$("#profileImage").css("background-color", `#${Math.floor(0xFFFFFF * mulberry32(seed[0])()).toString(16).padStart(6,"0")}`)
+			console.log(`#${mulberry32(seed[0])().toString(16).padStart(6,"0")}`);
+			changeListener?.();
+
+            if (this._documentSnapshot != null && user?.uid && !this.isInUsers()) {
+                this.addUser();
+            } else if (this._documentSnapshot != null && user?.uid) {
+                window.location.href = "/index.html";
+            }
+
+            document.querySelector("#menuSignOut").onclick = (event) => {
+                if (this.isSignedIn) {
+                    this.signOut();
+				    window.location.href = "";
+                } else {
+				    window.location.href = "/login.html";
+                }
+            }
+            document.querySelector("#menuSignOut").innerHTML = (rhit.fbAuthManager.isSignedIn ? `<i class="material-icons">logout</i>&nbsp;&nbsp;&nbsp;Sign Out` : `<i class="material-icons">login</i>&nbsp;&nbsp;&nbsp;Sign In`);
+		})
+        this._unsubscribe = this._ref.onSnapshot((doc) => {
+            this._documentSnapshot = doc;
+            changeListener();
+        });
+	}
+    addUser() {
+        this._ref.doc(this.uid).set({
+            [rhit.FB_COLLECTION_DEVELOPEDGAMES]: []
+        }).then(() => {window.location.href = "/index.html"})
+    }
+    isInUsers() {
+        if (this._documentSnapshot == null || this.#user == null) {
+            return false;
+        }
+        for(let i = 0; i < this._documentSnapshot.docs.length; i++) {
+            let doc = this._documentSnapshot.docs[i];
+            if (doc.id == this.uid) {
+                console.log(doc.id)
+                console.log(doc)
+                console.log(this.uid)
+                return true;
+            }
+        }
+        return false;
+    }
+	signIn() {
+		Rosefire.signIn("8d1a0a7f-3d9e-4427-ac16-22625c43b0fb", (err, rfUser) => {
+			if (err) {
+			  console.error("Rosefire error!", err);
+			  return;
+			}
+			console.log("Rosefire success!", rfUser);
+			
+
+			firebase.auth().signInWithCustomToken(rfUser.token).catch((error) => {
+				const { errorCode, errorMessage } = error;
+				if(errorCode === "auth/invalid-custom-token") {
+					alert("The token you provided is not useful");
+				} else {
+					console.error("Custom auth error", errorCode, errorMessage);
+				}
+			})
+			// TODO: Use the rfUser.token with your server.
+		});
+		  
+	}
+	signOut() {
+		firebase.auth().signOut().catch((error) => {
+			// An error happened.
+			const errorCode = error.code;
+			const errorMessage = error.message;
+			console.log("Signout user error", errorCode, errorMessage);
+		});
+	}
+	get isSignedIn() {
+		return this.#user != null;
+	}
+	get uid() {
+		// Null chaining!
+		return this.#user?.uid ?? "|anonymous|"
+	}
+}
+
+
 rhit.SearchPageController = class {
     constructor(search) {
         rhit.fbSearchManager.beginListening(this.updateView.bind(this));
@@ -108,84 +332,22 @@ rhit.FbSearchManager = class {
     }
 }
 
-const last = arr => arr[arr.length - 1];
 
-// from: https://stackoverflow.com/questions/22308014/damerau-levenshtein-distance-implementation
-function levenshteinWeighted(seq1,seq2) {
-    var len1=seq1.length;
-    var len2=seq2.length;
-    var i, j;
-    var dist;
-    var ic, dc, rc;
-    var last, old, column;
-
-    var weighter={
-        insert(c) { 
-            if(/\s/.test(c)) {
-                return 0.1;
-            }
-            return 1; 
-        },
-        delete(c) {
-            if(/\s/.test(c)) {
-                return 0.1;
-            }
-            return 5;
-        },
-        replace(c, d) {
-            return 10;
+rhit.GamePlayPageController = class {
+	constructor() {
+		rhit.fbPlayManager.beginListening(this.updateView.bind(this));
+	}
+	updateView() {
+		console.log(1);
+        if(rhit.fbPlayManager.isCanvas) {
+            let canvas = document.createElement("CANVAS");
+            canvas.id = "canvas";
+            document.querySelector("#playPage").appendChild(canvas);
         }
-    };
-
-    /* don't swap the sequences, or this is gonna be painful */
-    if (len1 == 0 || len2 == 0) {
-        dist = 0;
-        while (len1)
-            dist += weighter.delete(seq1[--len1]);
-        while (len2)
-            dist += weighter.insert(seq2[--len2]);
-        return dist;
-    }
-
-    column = []; // malloc((len2 + 1) * sizeof(double));
-    //if (!column) return -1;
-
-    column[0] = 0;
-    for (j = 1; j <= len2; ++j)
-        column[j] = column[j - 1] + weighter.insert(seq2[j - 1]);
-
-    for (i = 1; i <= len1; ++i) {
-        last = column[0]; /* m[i-1][0] */
-        column[0] += weighter.delete(seq1[i - 1]); /* m[i][0] */
-        for (j = 1; j <= len2; ++j) {
-            old = column[j];
-            if (seq1[i - 1] == seq2[j - 1]) {
-                column[j] = last; /* m[i-1][j-1] */
-            } else {
-                ic = column[j - 1] + weighter.insert(seq2[j - 1]);      /* m[i][j-1] */
-                dc = column[j] + weighter.delete(seq1[i - 1]);          /* m[i-1][j] */
-                rc = last + weighter.replace(seq1[i - 1], seq2[j - 1]); /* m[i-1][j-1] */
-                column[j] = ic < dc ? ic : (dc < rc ? dc : rc);
-            }
-            last = old;
-        }
-    }
-
-    dist = column[len2];
-    return dist;
-}
-
-function sortGamesList(search) {
-    let games = [...rhit.fbSearchManager.games];
-    for (i=games.length - 1; i>=0; i--) {
-        if (games[i].approved) {
-            games[i] = [games[i], levenshteinWeighted(search, games[i].title)];
-        } else {
-            games.splice(i, 1);
-        }
-    }
-    games.sort((a,b) => {return a[1]-b[1]})
-    return games.slice(0, 20);
+        let script = document.createElement("SCRIPT");
+        script.src = rhit.fbPlayManager.code;
+        document.body.appendChild(script);
+	}
 }
 
 rhit.FbPlayManager = class {
@@ -217,22 +379,6 @@ rhit.FbPlayManager = class {
 	}
 }
 
-rhit.GamePlayPageController = class {
-	constructor() {
-		rhit.fbPlayManager.beginListening(this.updateView.bind(this));
-	}
-	updateView() {
-		console.log(1);
-        if(rhit.fbPlayManager.isCanvas) {
-            let canvas = document.createElement("CANVAS");
-            canvas.id = "canvas";
-            document.querySelector("#playPage").appendChild(canvas);
-        }
-        let script = document.createElement("SCRIPT");
-        script.src = rhit.fbPlayManager.code;
-        document.body.appendChild(script);
-	}
-}
 
 rhit.GamePageController = class {
 	constructor() {
@@ -414,142 +560,6 @@ rhit.FbSingleGameManager = class {
 	}
 }
 
-rhit.LoginPageController = class LoginPageController {
-	constructor() {
-		document.querySelector("#rosefireButton").addEventListener("click", (event) => {
-			rhit.fbAuthManager.signIn();
-		});
-        rhit.fbAuthManager.beginListening(() => {
-            if(rhit.fbAuthManager.isSignedIn) {
-                document.querySelector("#rosefireButton").innerHTML = "Prestige?"
-            }
-        })
-	}
-}
-
-function cyrb128(str) {
-    let h1 = 1779033703, h2 = 3144134277,
-        h3 = 1013904242, h4 = 2773480762;
-    for (let i = 0, k; i < str.length; i++) {
-        k = str.charCodeAt(i);
-        h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
-        h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
-        h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
-        h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
-    }
-    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
-    h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
-    h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
-    h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
-    return [(h1^h2^h3^h4)>>>0, (h2^h1)>>>0, (h3^h1)>>>0, (h4^h1)>>>0];
-}
-
-function mulberry32(a) {
-    return function() {
-      var t = a += 0x6D2B79F5;
-      t = Math.imul(t ^ t >>> 15, t | 1);
-      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
-}
-
-rhit.FbAuthManager = class FbAuthManager {
-	#user = null;
-	#unsubscribe = null;
-	constructor() {
-        this._documentSnapshot = null;
-		this._unsubscribe = null;
-		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_USERS);
-	}
-	beginListening(changeListener) {
-		firebase.auth().onAuthStateChanged((user) => {
-			let uid = user?.uid ?? "A";
-			this.#user = user;
-			$("#profileImage").text(uid[0].toUpperCase())
-			var seed = cyrb128(uid);
-			
-			$("#profileImage").css("background-color", `#${Math.floor(0xFFFFFF * mulberry32(seed[0])()).toString(16).padStart(6,"0")}`)
-			console.log(`#${mulberry32(seed[0])().toString(16).padStart(6,"0")}`);
-			changeListener?.();
-
-            if (this._documentSnapshot != null && user?.uid && !this.isInUsers()) {
-                this.addUser();
-            } else if (this._documentSnapshot != null && user?.uid) {
-                window.location.href = "/index.html";
-            }
-
-            document.querySelector("#menuSignOut").onclick = (event) => {
-                if (this.isSignedIn) {
-                    this.signOut();
-				    window.location.href = "";
-                } else {
-				    window.location.href = "/login.html";
-                }
-            }
-            document.querySelector("#menuSignOut").innerHTML = (rhit.fbAuthManager.isSignedIn ? `<i class="material-icons">logout</i>&nbsp;&nbsp;&nbsp;Sign Out` : `<i class="material-icons">login</i>&nbsp;&nbsp;&nbsp;Sign In`);
-		})
-        this._unsubscribe = this._ref.onSnapshot((doc) => {
-            this._documentSnapshot = doc;
-            changeListener();
-        });
-	}
-    addUser() {
-        this._ref.doc(this.uid).set({
-            [rhit.FB_COLLECTION_DEVELOPEDGAMES]: []
-        }).then(() => {window.location.href = "/index.html"})
-    }
-    isInUsers() {
-        if (this._documentSnapshot == null || this.#user == null) {
-            return false;
-        }
-        for(let i = 0; i < this._documentSnapshot.docs.length; i++) {
-            let doc = this._documentSnapshot.docs[i];
-            if (doc.id == this.uid) {
-                console.log(doc.id)
-                console.log(doc)
-                console.log(this.uid)
-                return true;
-            }
-        }
-        return false;
-    }
-	signIn() {
-		Rosefire.signIn("8d1a0a7f-3d9e-4427-ac16-22625c43b0fb", (err, rfUser) => {
-			if (err) {
-			  console.error("Rosefire error!", err);
-			  return;
-			}
-			console.log("Rosefire success!", rfUser);
-			
-
-			firebase.auth().signInWithCustomToken(rfUser.token).catch((error) => {
-				const { errorCode, errorMessage } = error;
-				if(errorCode === "auth/invalid-custom-token") {
-					alert("The token you provided is not useful");
-				} else {
-					console.error("Custom auth error", errorCode, errorMessage);
-				}
-			})
-			// TODO: Use the rfUser.token with your server.
-		});
-		  
-	}
-	signOut() {
-		firebase.auth().signOut().catch((error) => {
-			// An error happened.
-			const errorCode = error.code;
-			const errorMessage = error.message;
-			console.log("Signout user error", errorCode, errorMessage);
-		});
-	}
-	get isSignedIn() {
-		return this.#user != null;
-	}
-	get uid() {
-		// Null chaining!
-		return this.#user?.uid ?? "|anonymous|"
-	}
-}
 
 rhit.EditGameDataController = class {
     constructor(gameId) {
@@ -973,15 +983,82 @@ rhit.EditGameDataManager = class {
 
 }
 
-rhit.checkForRedirects = function() {
-	if (!document.querySelector("#loginPage")) {
-		if(document.querySelector("#mainPage") || document.querySelector("#searchPage") || document.querySelector("#gamePage") || document.querySelector("#playPage")) {
-			return;
+
+rhit.MainPageController = class {
+    constructor() {
+        if (rhit.fbAuthManager.isSignedIn) {
+            document.querySelector("#addGameButton").style.visibility = "visible";
+            document.querySelector("#addGameButton").addEventListener('click', (event) => {
+                window.location.href = "/edit.html";
+            });
+        } else {
+            document.querySelector("#addGameButton").style.visibility = "hidden";
+        }
+        rhit.fbMainManager.beginListening(this.updateGamesList.bind(this), this.updateUserGamesList.bind(this), this.updateFavoritedGamesList.bind(this));
+    }
+    updateFavoritedGamesList() {
+        console.log(rhit.fbMainManager.games);
+        let games = rhit.fbMainManager.favorited;
+        const newList = htmlToElement(`<div id="favoriteGameListContainer" class="columns"></div>`);
+		// Fill the photoListContainer with photo cards using a loop
+		for (let i = 0; i < games.length; i++) {
+			const g = games[i];
+			const newCard = this.createCard(g);
+			newCard.addEventListener("click", (event) => {
+				window.location.href = `/play.html?id=${g.id}`;
+			});
+			newList.appendChild(newCard);
 		}
-		if(!rhit.fbAuthManager.isSignedIn) {
-			window.location.href = "/";
+		// Remove the old photoListContainer, and put in the new photoListContainer
+		const oldList = document.querySelector("#favoriteGameListContainer");
+		// Why hide, etc, when replaceWith exists?
+		oldList.replaceWith(newList);
+    }
+    updateGamesList() {
+        console.log(rhit.fbMainManager.games);
+        let games = rhit.fbMainManager.games;
+        const newList = htmlToElement(`<div id="gameListContainer" class="columns"></div>`);
+		// Fill the photoListContainer with photo cards using a loop
+		for (let i = 0; i < games.length; i++) {
+			const g = games[i];
+			const newCard = this.createCard(g);
+			newCard.addEventListener("click", (event) => {
+				window.location.href = `/game.html?id=${g.id}`;
+			});
+			newList.appendChild(newCard);
 		}
+		// Remove the old photoListContainer, and put in the new photoListContainer
+		const oldList = document.querySelector("#gameListContainer");
+		// Why hide, etc, when replaceWith exists?
+		oldList.replaceWith(newList);
+    }
+    
+    createCard(game) {
+		return htmlToElement(`
+        <div class="pin" data-id="${game.id}">
+          <img class="img-fluid" src="${game.icon}">
+          <p class="caption">${game.title}</p>
+        </div>
+      `);
 	}
+    updateUserGamesList() {
+        console.log(rhit.fbMainManager.userGames);
+        let games = rhit.fbMainManager.userGames;
+        const newList = htmlToElement(`<div id="userGameListContainer" class="columns"></div>`);
+		// Fill the photoListContainer with photo cards using a loop
+		for (let i = 0; i < games.length; i++) {
+			const g = games[i];
+			const newCard = this.createCard(g);
+			newCard.addEventListener("click", (event) => {
+				window.location.href = `/edit.html?id=${g.id}`;
+			});
+			newList.appendChild(newCard);
+		}
+		// Remove the old photoListContainer, and put in the new photoListContainer
+		const oldList = document.querySelector("#userGameListContainer");
+		// Why hide, etc, when replaceWith exists?
+		oldList.replaceWith(newList);
+    }
 }
 
 rhit.FbMainManager = class {
@@ -1075,88 +1152,17 @@ rhit.FbMainManager = class {
 	}
 
 }
-function htmlToElement(html) {
-	let template = document.createElement("TEMPLATE");
-	html = html.trim();
-	template.innerHTML = html;
-	return template.content.firstChild;
-}
 
-rhit.MainPageController = class {
-    constructor() {
-        if (rhit.fbAuthManager.isSignedIn) {
-            document.querySelector("#addGameButton").style.visibility = "visible";
-            document.querySelector("#addGameButton").addEventListener('click', (event) => {
-                window.location.href = "/edit.html";
-            });
-        } else {
-            document.querySelector("#addGameButton").style.visibility = "hidden";
-        }
-        rhit.fbMainManager.beginListening(this.updateGamesList.bind(this), this.updateUserGamesList.bind(this), this.updateFavoritedGamesList.bind(this));
-    }
-    updateFavoritedGamesList() {
-        console.log(rhit.fbMainManager.games);
-        let games = rhit.fbMainManager.favorited;
-        const newList = htmlToElement(`<div id="favoriteGameListContainer" class="columns"></div>`);
-		// Fill the photoListContainer with photo cards using a loop
-		for (let i = 0; i < games.length; i++) {
-			const g = games[i];
-			const newCard = this.createCard(g);
-			newCard.addEventListener("click", (event) => {
-				window.location.href = `/play.html?id=${g.id}`;
-			});
-			newList.appendChild(newCard);
+
+rhit.checkForRedirects = function() {
+	if (!document.querySelector("#loginPage")) {
+		if(document.querySelector("#mainPage") || document.querySelector("#searchPage") || document.querySelector("#gamePage") || document.querySelector("#playPage")) {
+			return;
 		}
-		// Remove the old photoListContainer, and put in the new photoListContainer
-		const oldList = document.querySelector("#favoriteGameListContainer");
-		// Why hide, etc, when replaceWith exists?
-		oldList.replaceWith(newList);
-    }
-    updateGamesList() {
-        console.log(rhit.fbMainManager.games);
-        let games = rhit.fbMainManager.games;
-        const newList = htmlToElement(`<div id="gameListContainer" class="columns"></div>`);
-		// Fill the photoListContainer with photo cards using a loop
-		for (let i = 0; i < games.length; i++) {
-			const g = games[i];
-			const newCard = this.createCard(g);
-			newCard.addEventListener("click", (event) => {
-				window.location.href = `/game.html?id=${g.id}`;
-			});
-			newList.appendChild(newCard);
+		if(!rhit.fbAuthManager.isSignedIn) {
+			window.location.href = "/";
 		}
-		// Remove the old photoListContainer, and put in the new photoListContainer
-		const oldList = document.querySelector("#gameListContainer");
-		// Why hide, etc, when replaceWith exists?
-		oldList.replaceWith(newList);
-    }
-    
-    createCard(game) {
-		return htmlToElement(`
-        <div class="pin" data-id="${game.id}">
-          <img class="img-fluid" src="${game.icon}">
-          <p class="caption">${game.title}</p>
-        </div>
-      `);
 	}
-    updateUserGamesList() {
-        console.log(rhit.fbMainManager.userGames);
-        let games = rhit.fbMainManager.userGames;
-        const newList = htmlToElement(`<div id="userGameListContainer" class="columns"></div>`);
-		// Fill the photoListContainer with photo cards using a loop
-		for (let i = 0; i < games.length; i++) {
-			const g = games[i];
-			const newCard = this.createCard(g);
-			newCard.addEventListener("click", (event) => {
-				window.location.href = `/edit.html?id=${g.id}`;
-			});
-			newList.appendChild(newCard);
-		}
-		// Remove the old photoListContainer, and put in the new photoListContainer
-		const oldList = document.querySelector("#userGameListContainer");
-		// Why hide, etc, when replaceWith exists?
-		oldList.replaceWith(newList);
-    }
 }
 
 rhit.initializePage = () => {
