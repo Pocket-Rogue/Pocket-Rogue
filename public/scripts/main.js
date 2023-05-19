@@ -459,7 +459,7 @@ rhit.FbAuthManager = class FbAuthManager {
             if (this._documentSnapshot != null && user?.uid && !this.isInUsers()) {
                 this.addUser();
             } else if (this._documentSnapshot != null && user?.uid) {
-                window.location.href = "/index.html"
+                window.location.href = "/index.html";
             }
 		})
         this._unsubscribe = this._ref.onSnapshot((doc) => {
@@ -1042,6 +1042,14 @@ function htmlToElement(html) {
 
 rhit.MainPageController = class {
     constructor() {
+        if (rhit.fbAuthManager.isSignedIn) {
+            document.querySelector("#addGameButton").style.visibility = "visible";
+            document.querySelector("#addGameButton").addEventListener('click', (event) => {
+                window.location.href = "/edit.html";
+            });
+        } else {
+            document.querySelector("#addGameButton").style.visibility = "hidden";
+        }
         rhit.fbMainManager.beginListening(this.updateGamesList.bind(this), this.updateUserGamesList.bind(this), this.updateFavoritedGamesList.bind(this));
     }
     updateFavoritedGamesList() {
