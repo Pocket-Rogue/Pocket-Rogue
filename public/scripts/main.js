@@ -978,7 +978,8 @@ rhit.EditGameDataManager = class {
         return this._documentSnapshot.get(rhit.FB_KEY_DESCRIPTION);
     }
     get developedGames() {
-        return this._gameDocumentSnapshot.get(rhit.FB_COLLECTION_DEVELOPEDGAMES);
+        console.log(this._userDocumentSnapshot);
+        return this._userDocumentSnapshot[rhit.FB_COLLECTION_DEVELOPEDGAMES];
     }
 
 }
